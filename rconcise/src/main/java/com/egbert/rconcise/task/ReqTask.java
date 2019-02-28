@@ -6,7 +6,7 @@ import android.util.Patterns;
 import com.egbert.rconcise.internal.Const;
 import com.egbert.rconcise.internal.ContentType;
 import com.egbert.rconcise.internal.HeaderField;
-import com.egbert.rconcise.internal.RConcise;
+import com.egbert.rconcise.RConcise;
 import com.egbert.rconcise.internal.ReqMethod;
 import com.egbert.rconcise.internal.Utils;
 import com.egbert.rconcise.service.IReqService;

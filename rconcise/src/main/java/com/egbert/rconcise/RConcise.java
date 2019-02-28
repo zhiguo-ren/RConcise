@@ -1,7 +1,9 @@
-package com.egbert.rconcise.internal;
+package com.egbert.rconcise;
 
 import android.support.annotation.NonNull;
 
+import com.egbert.rconcise.internal.ReqMethod;
+import com.egbert.rconcise.internal.Utils;
 import com.egbert.rconcise.listener.IHttpRespListener;
 import com.egbert.rconcise.listener.IRespListener;
 import com.egbert.rconcise.listener.JsonRespListenerImpl;
