@@ -63,7 +63,7 @@ public class ReqServiceImpl implements IReqService {
             }
 
             int respCode = connection.getResponseCode();
-            if (respCode == HttpURLConnection.HTTP_OK) {
+            if (respCode == HttpURLConnection.HTTP_OK || respCode == HttpURLConnection.HTTP_PARTIAL) {
                 InputStream inputStream = connection.getInputStream();
                 //响应头map
                 Map<String, List<String>> headerMap = connection.getHeaderFields();

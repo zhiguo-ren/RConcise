@@ -9,6 +9,7 @@ import com.egbert.rconcise.internal.HeaderField;
 import com.egbert.rconcise.RConcise;
 import com.egbert.rconcise.internal.ReqMethod;
 import com.egbert.rconcise.internal.Utils;
+import com.egbert.rconcise.internal.http.Request;
 import com.egbert.rconcise.service.IReqService;
 import com.google.gson.Gson;
 
@@ -20,17 +21,19 @@ import java.util.Map;
  */
 public class ReqTask implements Runnable {
     private IReqService reqService;
+    private Request request;
 
-    public ReqTask(RConcise reqHolder) {
-        reqService = reqHolder.getReqService();
-        reqService.setRespListener(reqHolder.getRespListener());
-        Map<String, String> headerMap = reqHolder.getHeaderMap();
-        String method = reqHolder.getMethod();
-        Object reqParams = reqHolder.getReqParams();
-        String url = reqHolder.getUrl();
+    public ReqTask(Request request) {
+        this.request = request;
+        reqService = request.getReqService();
+        reqService.setRespListener(request.getRespListener());
+        Map<String, String> headerMap = request.getHeaderMap();
+        String method = request.getMethod();
+        Object reqParams = request.getReqParams();
+        String url = request.getUrl();
         reqService.setReqMethod(method);
         reqService.setHeaderMap(headerMap);
-        String baseUrl = RConcise.getBaseUrl();
+        String baseUrl = RConcise.inst().getBaseUrl();
         String finalUrl;
         if (TextUtils.isEmpty(baseUrl) && Utils.verifyUrl(url, false)) {
             finalUrl = url;
