@@ -1,10 +1,6 @@
 package com.egbert.rconcise.internal;
 
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Patterns;
-
-import com.egbert.rconcise.listener.IRespListener;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,8 +15,7 @@ import java.util.Map;
  */
 public class Utils {
 
-    public static String handleInputStream(InputStream is, final IRespListener listener) {
-        Handler handler = new Handler(Looper.getMainLooper());
+    public static String handleInputStream(InputStream is) throws IOException {
         if (is != null) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             StringBuilder builder = new StringBuilder();
@@ -30,23 +25,9 @@ public class Utils {
                     builder.append(line).append("\n");
                 }
                 return builder.toString();
-            } catch (final IOException e) {
-                if (listener != null) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onError(e, "");
-                        }
-                    });
-                }
-                e.printStackTrace();
             } finally {
-                try {
-                    reader.close();
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                reader.close();
+                is.close();
             }
         }
         return null;
@@ -80,14 +61,38 @@ public class Utils {
 
     public static boolean verifyUrl(String url, boolean isBase) {
         if (url == null) {
-            throw new IllegalArgumentException("The url cannot be null.");
+            throw new IllegalArgumentException("The Url cannot be null.");
         }
-        if (!Patterns.WEB_URL.matcher(url).matches()) {
-            throw new IllegalArgumentException("The url is illegal.");
+        if (url.startsWith(Const.HTTP_SEPARATOR)) {
+            throw new IllegalArgumentException("The Url cannot to start with '/'");
         }
         if (isBase && !url.endsWith(Const.HTTP_SEPARATOR)) {
             throw new IllegalArgumentException("The baseUrl must to end with '/'");
         }
-        return true;
+        return Patterns.WEB_URL.matcher(url).matches();
+    }
+
+    /**
+     * 解析请求参数
+     */
+    public static StringBuilder parseParams(Object reqParams) {
+        Map<String, String> map;
+        if (reqParams instanceof Map) {
+            map = (Map<String, String>) reqParams;
+        } else {
+            map = Utils.beanToMap(reqParams);
+        }
+        StringBuilder builder = null;
+        if (map != null && map.size() != 0) {
+            builder = new StringBuilder();
+            for (Map.Entry entry : map.entrySet()) {
+                builder.append(entry.getKey())
+                        .append("=")
+                        .append(entry.getValue())
+                        .append("&");
+            }
+            builder.deleteCharAt(builder.lastIndexOf("&"));
+        }
+        return builder;
     }
 }

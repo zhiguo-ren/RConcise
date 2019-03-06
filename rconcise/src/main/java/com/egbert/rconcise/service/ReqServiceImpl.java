@@ -1,13 +1,18 @@
 package com.egbert.rconcise.service;
 
-import com.egbert.rconcise.internal.ContentType;
-import com.egbert.rconcise.internal.ReqMethod;
+import android.text.TextUtils;
+
+import com.egbert.rconcise.interceptor.CallNetServiceInterceptor;
+import com.egbert.rconcise.interceptor.Interceptor;
+import com.egbert.rconcise.interceptor.InterceptorChainImpl;
+import com.egbert.rconcise.interceptor.UrlProcessInterceptor;
+import com.egbert.rconcise.internal.http.Request;
+import com.egbert.rconcise.internal.http.Response;
 import com.egbert.rconcise.listener.IHttpRespListener;
 
-import java.io.BufferedOutputStream;
-import java.io.InputStream;
+import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -15,79 +20,50 @@ import java.util.Map;
  * Created by Egbert on 2/25/2019.
  */
 public class ReqServiceImpl implements IReqService {
-    private static final String CONTENT_TYPE = "Content-Type";
-    private static String BASE_URL = "";
+
+    private Request request;
     private IHttpRespListener httpRespListener;
-    private HttpURLConnection connection;
+    private Response response;
 
-    private String url;
-    private byte[] reqParams;
-    private String reqMethod;
-    private Map<String, String> headerMap;
-
-    @Override
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    @Override
-    public void setHeaderMap(Map<String, String> header) {
-        this.headerMap = header;
-    }
-
-    @Override
-    public void setReqMethod(String reqMethod) {
-        this.reqMethod = reqMethod;
+    public void setRequest(Request request) {
+        this.request = request;
+        httpRespListener = request.respListener();
     }
 
     @Override
     public void execute() {
         try {
-            URL reqUrl = new URL(url);
-            connection = (HttpURLConnection) reqUrl.openConnection();
-            connection.setRequestMethod(reqMethod);
-            //默认Content-Type值为application/x-www-form-urlencoded
-            connection.setRequestProperty(CONTENT_TYPE, ContentType.FORM_URLENCODED.getContentType());
-
-            if (headerMap != null && headerMap.size() != 0) {
-                for (Map.Entry<String, String> entry : headerMap.entrySet()) {
-                    connection.setRequestProperty(entry.getKey(), entry.getValue());
-                }
+            response = getResponseByInterceptors();
+            if (response.exception() != null) {
+                httpRespListener.onError(response.exception());
+                return;
             }
-            connection.connect();
-
-            if (reqMethod.equalsIgnoreCase(ReqMethod.POST.getMethod())) {
-                BufferedOutputStream writer = new BufferedOutputStream(connection.getOutputStream());
-                writer.write(reqParams);
-                writer.close();
-            }
-
-            int respCode = connection.getResponseCode();
+            int respCode = response.respCode();
+            String respStr = response.respStr();
             if (respCode == HttpURLConnection.HTTP_OK || respCode == HttpURLConnection.HTTP_PARTIAL) {
-                InputStream inputStream = connection.getInputStream();
-                //响应头map
-                Map<String, List<String>> headerMap = connection.getHeaderFields();
-                httpRespListener.onSuccess(inputStream, headerMap);
+                //响应头
+                Map<String, List<String>> headerMap = response.headers();
+                httpRespListener.onSuccess(respStr, headerMap);
+            } else if (respCode >= HttpURLConnection.HTTP_INTERNAL_ERROR) {
+                httpRespListener.onFailure(respCode, TextUtils.isEmpty(respStr) ? response.message() : respStr);
             } else {
-                httpRespListener.onFailure(respCode, connection.getResponseMessage());
+                httpRespListener.onFailure(respCode, response.message());
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             httpRespListener.onError(e);
             e.printStackTrace();
-        } finally {
-            if (connection != null) {
-                connection.disconnect();
-            }
         }
     }
 
-    @Override
-    public void setRespListener(IHttpRespListener respListener) {
-        httpRespListener = respListener;
-    }
-
-    @Override
-    public void setReqParams(byte[] params) {
-        reqParams = params;
+    private Response getResponseByInterceptors() throws IOException {
+        ArrayList<Interceptor> interceptors = new ArrayList<>();
+        ArrayList<Interceptor> clientInterceptors = request.rClient().getInterceptors();
+        interceptors.add(new UrlProcessInterceptor());
+        if (clientInterceptors != null) {
+            interceptors.addAll(clientInterceptors);
+        }
+        interceptors.add(new CallNetServiceInterceptor());
+        InterceptorChainImpl chain = new InterceptorChainImpl(interceptors, request, 0);
+        return chain.proceed(request);
     }
 }

@@ -3,6 +3,7 @@ package com.egbert.rconcise.internal.http;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import com.egbert.rconcise.RClient;
 import com.egbert.rconcise.internal.ReqMethod;
 import com.egbert.rconcise.listener.IHttpRespListener;
 import com.egbert.rconcise.listener.IRespListener;
@@ -21,6 +22,7 @@ import java.util.Map;
  * Created by Egbert on 3/1/2019.
  */
 public final class Request {
+    private final RClient rClient;
     private final IReqService reqService;
     private final IHttpRespListener respListener;
     private final Object reqParams;
@@ -37,6 +39,7 @@ public final class Request {
      * reqService 处理请求逻辑
      */
     private Request(Builder builder) {
+        this.rClient = builder.rClient;
         this.reqService = builder.reqService;
         this.respListener = builder.respListener;
         this.reqParams = builder.reqParams;
@@ -45,35 +48,44 @@ public final class Request {
         this.method = builder.method;
     }
 
-    public IReqService getReqService() {
+    public Builder newBuilder() {
+        return new Builder(this);
+    }
+
+    public RClient rClient() {
+        return this.rClient;
+    }
+
+    public IReqService reqService() {
         return reqService;
     }
 
-    public IHttpRespListener getRespListener() {
+    public IHttpRespListener respListener() {
         return respListener;
     }
 
-    public Object getReqParams() {
+    public Object reqParams() {
         return reqParams;
     }
 
-    public String getUrl() {
+    public String url() {
         return url;
     }
 
-    public HashMap<String, String> getHeaderMap() {
+    public HashMap<String, String> headers() {
         return headerMap;
     }
 
-    public String getMethod() {
+    public String method() {
         return method;
     }
 
     public static class Builder {
+        private RClient rClient;
         private IReqService reqService;
         private IHttpRespListener respListener;
         private Object reqParams;
-        private final String url;
+        private String url;
         private HashMap<String, String> headerMap;
         private String method;
         private Map<String, String> params;
@@ -84,6 +96,26 @@ public final class Request {
 
         public static Builder create(@NonNull String url) {
             return new Builder(url);
+        }
+
+        public Builder(Request req) {
+            this.rClient = req.rClient;
+            this.reqService = req.reqService;
+            this.respListener = req.respListener;
+            this.reqParams = req.reqParams;
+            this.url = req.url;
+            this.headerMap = req.headerMap;
+            this.method = req.method;
+        }
+
+        public Builder client(@NonNull RClient rClient) {
+            this.rClient = rClient;
+            return this;
+        }
+
+        public Builder url(String url) {
+            this.url = url;
+            return this;
         }
 
         /**
@@ -145,7 +177,7 @@ public final class Request {
         }
 
         /**
-         * 单个设置请求头属性
+         * 单个添加请求头属性
          */
         public Builder addHeader(String name, String value) {
             if (headerMap == null) {
@@ -165,7 +197,7 @@ public final class Request {
                 return;
             }
             this.method = method;
-            build();
+            enqueue(build());
         }
 
         public void get() {
@@ -176,7 +208,11 @@ public final class Request {
             sendReq(ReqMethod.POST.getMethod());
         }
 
-        private void build() {
+        public Request build() {
+            if (this.rClient == null) {
+                throw new NullPointerException("RClient cannot be null");
+            }
+
             if (params != null) {
                 if (reqParams instanceof Map) {
                     ((Map) reqParams).putAll(params);
@@ -184,8 +220,12 @@ public final class Request {
                     reqParams = params;
                 }
             }
+            return new Request(this);
+        }
+
+        private void enqueue(Request request) {
             try {
-                ThreadPoolManager.getInst().execute(new ReqTask(new Request(this)));
+                ThreadPoolManager.getInst().execute(new ReqTask(request));
             } catch (InterruptedException e) {
                 this.respListener.onError(e);
                 e.printStackTrace();

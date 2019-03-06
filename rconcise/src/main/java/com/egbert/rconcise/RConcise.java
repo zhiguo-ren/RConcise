@@ -1,19 +1,18 @@
 package com.egbert.rconcise;
 
-import com.egbert.rconcise.internal.Utils;
+import java.util.HashMap;
 
 /**
  * Created by Egbert on 2/25/2019.
  */
 public class RConcise {
 
+    private HashMap<String, RClient> rClientHashMap;
+
     private static RConcise sRConcise;
-    /**
-     * baseUrl 为请求地址的公共前半部分，后边追加具体接口的路径，只需在app中设置一次，必须以'/'结尾；
-     */
-    private String baseUrl;
 
     private RConcise() {
+        rClientHashMap = new HashMap<>();
     }
 
     public static synchronized RConcise inst() {
@@ -23,14 +22,24 @@ public class RConcise {
         return sRConcise;
     }
 
-    public void setBaseUrl(String baseUrl) {
-        if (Utils.verifyUrl(baseUrl, true)) {
-            this.baseUrl = baseUrl;
+    public RClient createRClient(String name) {
+        if (rClientHashMap.containsKey(name)) {
+            throw new IllegalArgumentException("This name is existed.");
         }
+        RClient rClient = new RClient();
+        rClientHashMap.put(name, rClient);
+        return rClient;
     }
 
-    public String getBaseUrl() {
-        return this.baseUrl;
+    public RClient rClient(String name) {
+        return rClientHashMap.get(name);
     }
 
+    public void removeRClient(String name) {
+        rClientHashMap.remove(name);
+    }
+
+    public void removeAllRClient() {
+        rClientHashMap.clear();
+    }
 }

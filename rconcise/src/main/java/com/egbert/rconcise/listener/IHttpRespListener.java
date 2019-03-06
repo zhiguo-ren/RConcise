@@ -1,6 +1,5 @@
 package com.egbert.rconcise.listener;
 
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +12,7 @@ public interface IHttpRespListener {
     /**
      * 成功返回
      */
-    void onSuccess(InputStream inputStream, Map<String, List<String>> headerMap);
+    void onSuccess(String resp, Map<String, List<String>> headerMap);
 
     /**
      * 发生错误

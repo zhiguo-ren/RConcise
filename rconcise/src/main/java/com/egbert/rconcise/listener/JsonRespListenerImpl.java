@@ -4,11 +4,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
-import com.egbert.rconcise.internal.Utils;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -32,13 +30,12 @@ public class JsonRespListenerImpl<T> implements IHttpRespListener {
     }
 
     @Override
-    public void onSuccess(InputStream is, Map<String, List<String>> headerMap) {
-        String respStr = Utils.handleInputStream(is, dataRespListener);
-        if (TextUtils.isEmpty(respStr)) {
+    public void onSuccess(String resp, Map<String, List<String>> headerMap) {
+        if (TextUtils.isEmpty(resp)) {
             callback(CALL_BACK_ERROR, null, null, "数据为null", 0);
         } else {
             try {
-                T model = new Gson().fromJson(respStr, respType);
+                T model = new Gson().fromJson(resp, respType);
                 callback(CALL_BACK_SUCCESS, model, null, "", 0);
             } catch (JsonSyntaxException e) {
                 callback(CALL_BACK_ERROR, null, e, "非法的json数据", 0);
