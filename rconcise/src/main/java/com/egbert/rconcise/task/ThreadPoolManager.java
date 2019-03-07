@@ -1,7 +1,5 @@
 package com.egbert.rconcise.task;
 
-import android.util.Log;
-
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -15,7 +13,6 @@ import java.util.concurrent.TimeUnit;
  * 线程池管理器
  */
 public final class ThreadPoolManager {
-    public static final String TAG = "Concise";
     private static ThreadPoolManager sManager;
 
     private LinkedBlockingDeque<Future<?>> deque;
@@ -38,14 +35,12 @@ public final class ThreadPoolManager {
             while (true) {
                 FutureTask futureTask = null;
                 try {
-                    Log.e(TAG, "提取任务前 " + deque.size());
                     futureTask = (FutureTask) deque.take();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 if (futureTask != null) {
                     executor.execute(futureTask);
-                    Log.e(TAG, "提取任务后 " + deque.size());
                 }
             }
         }

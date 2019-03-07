@@ -1,15 +1,17 @@
 package com.egbert.rconcise.service;
 
+import com.egbert.rconcise.internal.http.Request;
+
 /**
  * Created by Egbert on 2/25/2019.
  * 设置请求参数及请求逻辑
  */
 public interface IReqService {
 
-//    /**
-//     * 配置请求的客户端，客户端中封装了该客户端发出请求的统一配置信息
-//     */
-//    void setRClient(RClient rClient);
+    /**
+     * 配置请求Request
+     */
+    void setRequest(Request request);
 //
 //    /**
 //     * 设置请求url

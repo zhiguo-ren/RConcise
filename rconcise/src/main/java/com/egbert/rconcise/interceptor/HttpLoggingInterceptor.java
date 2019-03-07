@@ -145,7 +145,7 @@ public class HttpLoggingInterceptor implements Interceptor {
                 }
                 String type = ContentType.FORM_URLENCODED.getContentType();
                 if (TextUtils.isEmpty(contentType) || type.contains(contentType)) {
-                    StringBuilder builder = Utils.parseParams(reqParams);
+                    StringBuilder builder = Utils.parseParams(reqParams, false);
                     if (builder != null && builder.length() > 0) {
                         params = builder.toString().getBytes(StandardCharsets.UTF_8);
                     }

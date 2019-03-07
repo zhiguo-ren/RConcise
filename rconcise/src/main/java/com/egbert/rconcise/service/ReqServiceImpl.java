@@ -1,11 +1,13 @@
 package com.egbert.rconcise.service;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.egbert.rconcise.interceptor.CallNetServiceInterceptor;
 import com.egbert.rconcise.interceptor.Interceptor;
 import com.egbert.rconcise.interceptor.InterceptorChainImpl;
 import com.egbert.rconcise.interceptor.UrlProcessInterceptor;
+import com.egbert.rconcise.internal.Utils;
 import com.egbert.rconcise.internal.http.Request;
 import com.egbert.rconcise.internal.http.Response;
 import com.egbert.rconcise.listener.IHttpRespListener;
@@ -25,6 +27,7 @@ public class ReqServiceImpl implements IReqService {
     private IHttpRespListener httpRespListener;
     private Response response;
 
+    @Override
     public void setRequest(Request request) {
         this.request = request;
         httpRespListener = request.respListener();
@@ -34,10 +37,6 @@ public class ReqServiceImpl implements IReqService {
     public void execute() {
         try {
             response = getResponseByInterceptors();
-            if (response.exception() != null) {
-                httpRespListener.onError(response.exception());
-                return;
-            }
             int respCode = response.respCode();
             String respStr = response.respStr();
             if (respCode == HttpURLConnection.HTTP_OK || respCode == HttpURLConnection.HTTP_PARTIAL) {
@@ -49,9 +48,9 @@ public class ReqServiceImpl implements IReqService {
             } else {
                 httpRespListener.onFailure(respCode, response.message());
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             httpRespListener.onError(e);
-            e.printStackTrace();
+            Log.e(Utils.TAG, Log.getStackTraceString(e));
         }
     }
 

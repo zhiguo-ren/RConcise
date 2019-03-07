@@ -7,12 +7,42 @@
     tools:context=".MainActivity">
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/title"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:text="RConcise 网络请求库使用demo"
+        android:textSize="18sp"
+        android:textColor="@android:color/black"
+        android:gravity="center"
+        android:background="@android:color/background_light"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/get_btn"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:text="get请求"
+        android:textSize="16sp"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="50dp"
+        android:layout_marginStart="20dp"
+        android:background="@android:color/holo_blue_dark"
+        app:layout_constraintTop_toBottomOf="@id/title"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <Button
+        android:id="@+id/post_btn"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:text="post请求"
+        android:textSize="16sp"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="20dp"
+        android:background="@android:color/holo_blue_dark"
+        app:layout_constraintTop_toBottomOf="@id/title"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </android.support.constraint.ConstraintLayout>

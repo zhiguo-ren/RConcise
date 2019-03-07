@@ -23,6 +23,8 @@ public class RClient {
     public void setBaseUrl(String baseUrl) {
         if (Utils.verifyUrl(baseUrl, true)) {
             this.baseUrl = baseUrl;
+        } else {
+            throw new IllegalArgumentException("The BaseUrl is illegal.");
         }
     }
 

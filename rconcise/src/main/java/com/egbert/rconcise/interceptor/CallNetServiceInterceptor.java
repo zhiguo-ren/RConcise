@@ -32,14 +32,14 @@ public class CallNetServiceInterceptor implements Interceptor {
         Object reqParams = request.reqParams();
 
         byte[] params = null;
-        if (reqParams != null) {
+        if (request.method().equalsIgnoreCase(ReqMethod.POST.getMethod()) && reqParams != null) {
             String contentType = null;
             if (headerMap != null) {
                 contentType = headerMap.get(HeaderField.CONTENT_TYPE.getValue());
             }
             String type = ContentType.FORM_URLENCODED.getContentType();
             if (TextUtils.isEmpty(contentType) || type.contains(contentType)) {
-                StringBuilder builder = Utils.parseParams(reqParams);
+                StringBuilder builder = Utils.parseParams(reqParams, false);
                 if (builder != null && builder.length() > 0) {
                     params = builder.toString().getBytes(StandardCharsets.UTF_8);
                 }

@@ -9,8 +9,6 @@ import com.egbert.rconcise.listener.IHttpRespListener;
 import com.egbert.rconcise.listener.IRespListener;
 import com.egbert.rconcise.listener.JsonRespListenerImpl;
 import com.egbert.rconcise.listener.StringRespListener;
-import com.egbert.rconcise.service.IReqService;
-import com.egbert.rconcise.service.ReqServiceImpl;
 import com.egbert.rconcise.task.ReqTask;
 import com.egbert.rconcise.task.ThreadPoolManager;
 
@@ -23,7 +21,6 @@ import java.util.Map;
  */
 public final class Request {
     private final RClient rClient;
-    private final IReqService reqService;
     private final IHttpRespListener respListener;
     private final Object reqParams;
     private final String url;
@@ -40,7 +37,6 @@ public final class Request {
      */
     private Request(Builder builder) {
         this.rClient = builder.rClient;
-        this.reqService = builder.reqService;
         this.respListener = builder.respListener;
         this.reqParams = builder.reqParams;
         this.url = builder.url;
@@ -54,10 +50,6 @@ public final class Request {
 
     public RClient rClient() {
         return this.rClient;
-    }
-
-    public IReqService reqService() {
-        return reqService;
     }
 
     public IHttpRespListener respListener() {
@@ -82,7 +74,6 @@ public final class Request {
 
     public static class Builder {
         private RClient rClient;
-        private IReqService reqService;
         private IHttpRespListener respListener;
         private Object reqParams;
         private String url;
@@ -100,7 +91,6 @@ public final class Request {
 
         public Builder(Request req) {
             this.rClient = req.rClient;
-            this.reqService = req.reqService;
             this.respListener = req.respListener;
             this.reqParams = req.reqParams;
             this.url = req.url;
@@ -147,7 +137,6 @@ public final class Request {
          * @param listener 响应回调接口
          */
         public <T> Builder respListener(Class<T> resp, IRespListener<T> listener) {
-            this.reqService = new ReqServiceImpl();
             this.respListener = new JsonRespListenerImpl<>(resp, listener);
             return this;
         }
@@ -157,7 +146,6 @@ public final class Request {
          * @param listener 响应回调接口
          */
         public Builder respStrListener(IRespListener<String> listener) {
-            this.reqService = new ReqServiceImpl();
             this.respListener = new StringRespListener(listener);
             return this;
         }
@@ -191,21 +179,22 @@ public final class Request {
          * 发送请求
          * @param method 请求方法，不设置默认为GET
          */
-        public void sendReq(String method) {
+        public Builder sendReq(String method) {
             if (TextUtils.isEmpty(method)) {
-                get();
-                return;
+                this.method = ReqMethod.GET.getMethod();
+            } else {
+                this.method = method;
             }
-            this.method = method;
             enqueue(build());
+            return this;
         }
 
-        public void get() {
-            sendReq(ReqMethod.GET.getMethod());
+        public Builder get() {
+            return sendReq(ReqMethod.GET.getMethod());
         }
 
-        public void post() {
-            sendReq(ReqMethod.POST.getMethod());
+        public Builder post() {
+            return sendReq(ReqMethod.POST.getMethod());
         }
 
         public Request build() {

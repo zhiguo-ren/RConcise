@@ -4,9 +4,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
-import com.egbert.rconcise.internal.Utils;
-
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -28,8 +25,7 @@ public class StringRespListener implements IHttpRespListener {
     }
 
     @Override
-    public void onSuccess(InputStream is, Map<String, List<String>> headerMap) {
-        String respStr = Utils.handleInputStream(is, dataRespListener);
+    public void onSuccess(String respStr, Map<String, List<String>> headerMap) {
         if (TextUtils.isEmpty(respStr)) {
             callback(CALL_BACK_ERROR, null, null, "数据为null", 0);
         } else {
