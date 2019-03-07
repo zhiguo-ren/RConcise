@@ -39,7 +39,9 @@ public class MainActivity extends AppCompatActivity {
         });
         RClient rClient = RConcise.inst().createRClient("test");
         rClient.setBaseUrl(BASE_URL);
-        rClient.setInterceptor(new HttpLoggingInterceptor());
+        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        rClient.setInterceptor(interceptor);
     }
 
     private void req(boolean method, String ...args) {
