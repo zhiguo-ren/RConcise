@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
         interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         rClient.setInterceptor(interceptor);
+
     }
 
     private void req(boolean method, String ...args) {

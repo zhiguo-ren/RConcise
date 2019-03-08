@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 import com.egbert.rconcise.internal.ContentType;
 import com.egbert.rconcise.internal.HeaderField;
+import com.egbert.rconcise.internal.NoBorderFormatStrategy;
 import com.egbert.rconcise.internal.Utils;
 import com.egbert.rconcise.internal.http.Request;
 import com.egbert.rconcise.internal.http.Response;
@@ -17,12 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static com.egbert.rconcise.internal.Utils.TAG;
+
 /**
  * 请求响应日志拦截器
  * Created by Egbert on 3/6/2019.
  */
 public class HttpLoggingInterceptor implements Interceptor {
-    private static final String TAG = "RConcise ";
 
     public enum Level {
         /** No logs. */
@@ -87,7 +89,11 @@ public class HttpLoggingInterceptor implements Interceptor {
 
     public HttpLoggingInterceptor() {
         this(RLogger.DEFAULT);
-        Logger.addLogAdapter(new AndroidLogAdapter());
+        NoBorderFormatStrategy formatStrategy = NoBorderFormatStrategy.newBuilder()
+                .showThreadInfo(false)    // 是否显示线程信息
+                .tag(TAG)               // 全局Tag标签
+                .build();
+        Logger.addLogAdapter(new AndroidLogAdapter(formatStrategy));
     }
 
     public HttpLoggingInterceptor(RLogger logger) {
@@ -155,7 +161,6 @@ public class HttpLoggingInterceptor implements Interceptor {
                 } else {
                     params = reqParams.toString().getBytes(StandardCharsets.UTF_8);
                 }
-                logger.log("");
                 logger.log(new String(params, StandardCharsets.UTF_8));
                 logger.log("--> END " + request.method()
                         + " (" + (params == null ? 0 : params.length) + "-byte body)");
@@ -188,14 +193,15 @@ public class HttpLoggingInterceptor implements Interceptor {
                     for (String value : info) {
                         builder.append(value);
                     }
-                    logger.log(key + ": " + builder.toString());
+                    if (key != null) {
+                        logger.log(key + ": " + builder.toString());
+                    }
                 }
             }
 
             if (!logBody || TextUtils.isEmpty(responseBody)) {
                 logger.log("<-- END HTTP");
             } else {
-                logger.log("");
                 logger.log(responseBody);
                 logger.log("<-- END HTTP (" + responseBody.getBytes().length + "-byte body)");
             }
@@ -208,12 +214,12 @@ public class HttpLoggingInterceptor implements Interceptor {
         void log(String message);
 
         /**
-         * A {@link Logger} defaults output appropriate for the current platform.
+         * 不知道日志处理类，就默认使用Logger
          */
         RLogger DEFAULT = new RLogger() {
             @Override
             public void log(String message) {
-                Logger.d(TAG + message);
+                Logger.d(message);
             }
         };
     }

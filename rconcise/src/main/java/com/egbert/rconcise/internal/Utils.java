@@ -17,7 +17,7 @@ import java.util.Map;
  * Created by Egbert on 2/25/2019.
  */
 public class Utils {
-    public static final String TAG = "RConcise";
+    public static final String TAG = "RConcise_Log";
 
     public static String handleInputStream(InputStream is) throws IOException {
         if (is != null) {
@@ -99,5 +99,12 @@ public class Utils {
             builder.deleteCharAt(builder.lastIndexOf("&"));
         }
         return builder;
+    }
+
+    public static <T> T checkNotNull(final T obj) {
+        if (obj == null) {
+            throw new NullPointerException();
+        }
+        return obj;
     }
 }

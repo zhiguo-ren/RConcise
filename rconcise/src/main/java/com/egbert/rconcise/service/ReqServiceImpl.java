@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * get，post请求，服务类
  * Created by Egbert on 2/25/2019.
  */
 public class ReqServiceImpl implements IReqService {
