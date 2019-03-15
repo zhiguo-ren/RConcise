@@ -1,6 +1,10 @@
 package com.egbert.rconcisecase;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -13,6 +17,7 @@ import com.egbert.rconcise.internal.http.Request;
 import com.egbert.rconcise.listener.IRespListener;
 
 public class MainActivity extends AppCompatActivity {
+    private static final int WRITE_REQUEST_CODE = 1;
     public static final String BASE_URL = "http://192.168.1.36:8080/tmall/";
     public static final String URL = "app/cs";
 
@@ -72,6 +77,30 @@ public class MainActivity extends AppCompatActivity {
             builder.get();
         } else {
             builder.post();
+        }
+    }
+
+    private void reqPermission() {
+        String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+        int grant = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (grant != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, permissions, WRITE_REQUEST_CODE);
+        } else {
+//            createDb(currPath);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case WRITE_REQUEST_CODE:
+                if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+//                    createDb(currPath);
+                } else {
+                    Toast.makeText(this, "没有读写sd权限，无法操作数据库", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            default: break;
         }
     }
 }
