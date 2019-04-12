@@ -1,20 +1,16 @@
 package com.egbert.rconcise.interceptor;
 
-import android.text.TextUtils;
-
 import com.egbert.rconcise.internal.ContentType;
 import com.egbert.rconcise.internal.HeaderField;
 import com.egbert.rconcise.internal.ReqMethod;
 import com.egbert.rconcise.internal.Utils;
 import com.egbert.rconcise.internal.http.Request;
 import com.egbert.rconcise.internal.http.Response;
-import com.google.gson.Gson;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,18 +33,7 @@ public class CallNetServiceInterceptor implements Interceptor {
             if (headerMap != null) {
                 contentType = headerMap.get(HeaderField.CONTENT_TYPE.getValue());
             }
-            String type = ContentType.FORM_URLENCODED.getContentType();
-            if (TextUtils.isEmpty(contentType) || type.contains(contentType)) {
-                StringBuilder builder = Utils.parseParams(reqParams, false);
-                if (builder != null && builder.length() > 0) {
-                    params = builder.toString().getBytes(StandardCharsets.UTF_8);
-                }
-            } else if (ContentType.JSON.getContentType().contains(contentType)) {
-                String json = new Gson().toJson(reqParams);
-                params = json.getBytes(StandardCharsets.UTF_8);
-            } else {
-                params = reqParams.toString().getBytes(StandardCharsets.UTF_8);
-            }
+            params = Utils.paramsToByte(contentType, reqParams);
         }
 
         HttpURLConnection connection = null;

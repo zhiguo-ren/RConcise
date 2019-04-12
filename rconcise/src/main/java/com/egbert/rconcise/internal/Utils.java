@@ -1,6 +1,10 @@
 package com.egbert.rconcise.internal;
 
+import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Patterns;
+
+import com.google.gson.Gson;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,6 +12,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -106,5 +111,47 @@ public class Utils {
             throw new NullPointerException();
         }
         return obj;
+    }
+
+    public static byte[] paramsToByte(String contentType, Object reqParams) throws UnsupportedEncodingException {
+        String tmpType = null;
+        byte[] params = null;
+        if (TextUtils.isEmpty(contentType)) {
+            contentType = tmpType = ContentType.FORM_URLENCODED.getContentType();
+        }
+        if (tmpType.contains(contentType)) {
+            StringBuilder builder = Utils.parseParams(reqParams, false);
+            if (builder != null && builder.length() > 0) {
+                params = builder.toString().getBytes(StandardCharsets.UTF_8);
+            }
+        } else if (ContentType.JSON.getContentType().contains(contentType)) {
+            String json = new Gson().toJson(reqParams);
+            params = json.getBytes(StandardCharsets.UTF_8);
+        } else {
+            params = reqParams.toString().getBytes(StandardCharsets.UTF_8);
+        }
+        return params;
+    }
+
+    public static String guessFileName(String url) throws UnsupportedEncodingException, IllegalStateException {
+        String filename = null;
+        String decodedUrl = Uri.decode(url);
+        if (decodedUrl != null) {
+            int queryIndex = decodedUrl.indexOf('?');
+            // If there is a query string strip it, same as desktop browsers
+            if (queryIndex > 0) {
+                decodedUrl = decodedUrl.substring(0, queryIndex);
+            }
+            if (!decodedUrl.endsWith("/")) {
+                int index = decodedUrl.lastIndexOf('/') + 1;
+                if (index > 0) {
+                    filename = URLDecoder.decode(decodedUrl.substring(index), StandardCharsets.UTF_8.name());
+                }
+            }
+        }
+        if (TextUtils.isEmpty(filename) || !filename.contains(".")) {
+            throw new IllegalStateException("The filename cannot be obtained from the url, please set filename.");
+        }
+        return filename;
     }
 }

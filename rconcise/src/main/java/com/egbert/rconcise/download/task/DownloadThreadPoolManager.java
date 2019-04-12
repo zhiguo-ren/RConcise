@@ -1,4 +1,4 @@
-package com.egbert.rconcise.task;
+package com.egbert.rconcise.download.task;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Future;
@@ -9,11 +9,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by Egbert on 2/26/2019.
- * 线程池管理器
+ * Created by Egbert on 3/20/2019.
+ * 下载任务线程池管理器
  */
-public final class ThreadPoolManager {
-    private static volatile ThreadPoolManager sManager;
+public final class DownloadThreadPoolManager {
+    private static volatile DownloadThreadPoolManager sManager;
 
     private LinkedBlockingDeque<Future<?>> deque;
     private ThreadPoolExecutor executor;
@@ -46,26 +46,40 @@ public final class ThreadPoolManager {
         }
     };
 
-    private ThreadPoolManager() {
+    private DownloadThreadPoolManager() {
         deque = new LinkedBlockingDeque<>();
-        executor = new ThreadPoolExecutor(4, Runtime.getRuntime().availableProcessors() * 2, 5,
-                TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(Runtime.getRuntime().availableProcessors() * 2), handler);
+        executor = new ThreadPoolExecutor(3, 4, 3,
+                TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(2), handler);
         executor.execute(runnable);
     }
 
-    public static ThreadPoolManager getInst() {
+    public static DownloadThreadPoolManager getInst() {
         if (sManager == null) {
-            synchronized (ThreadPoolManager.class) {
+            synchronized (DownloadThreadPoolManager.class) {
                 if (sManager == null) {
-                    sManager = new ThreadPoolManager();
+                    sManager = new DownloadThreadPoolManager();
                 }
             }
         }
         return sManager;
     }
 
-    public void execute(Runnable runnable) throws InterruptedException {
-        deque.put(new FutureTask<>(runnable, null));
+    public <T> void execute(FutureTask<T> task) throws InterruptedException {
+        deque.put(task);
+    }
+
+    public <T> boolean remove(FutureTask<T> task) {
+        boolean result;
+        if (deque.contains(task)) {
+            result = deque.remove(task);
+        } else {
+            result = executor.remove(task);
+        }
+        return result;
+    }
+
+    public boolean isExisted(FutureTask task) {
+        return deque.contains(task);
     }
 
 }

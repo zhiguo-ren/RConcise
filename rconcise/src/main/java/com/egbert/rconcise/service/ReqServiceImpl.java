@@ -8,6 +8,7 @@ import com.egbert.rconcise.interceptor.Interceptor;
 import com.egbert.rconcise.interceptor.InterceptorChainImpl;
 import com.egbert.rconcise.interceptor.UrlProcessInterceptor;
 import com.egbert.rconcise.internal.Utils;
+import com.egbert.rconcise.internal.http.IRequest;
 import com.egbert.rconcise.internal.http.Request;
 import com.egbert.rconcise.internal.http.Response;
 import com.egbert.rconcise.listener.IHttpRespListener;
@@ -29,9 +30,9 @@ public class ReqServiceImpl implements IReqService {
     private Response response;
 
     @Override
-    public void setRequest(Request request) {
-        this.request = request;
-        httpRespListener = request.respListener();
+    public void setRequest(IRequest request) {
+        this.request = (Request) request;
+        httpRespListener = this.request.respListener();
     }
 
     @Override

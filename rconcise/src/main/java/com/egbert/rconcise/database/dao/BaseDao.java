@@ -20,7 +20,7 @@ import java.util.Map;
  */
 public abstract class BaseDao<T> implements IBaseDao<T> {
 
-    private SQLiteDatabase database;
+    protected SQLiteDatabase database;
 
     private volatile boolean isInit;
 
@@ -28,7 +28,7 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
 
     private HashMap<String, Field> cacheMap;
 
-    private String tableName;
+    public String tableName;
 
     protected synchronized boolean init(Class<T> entity, SQLiteDatabase database) {
         if (!isInit) {

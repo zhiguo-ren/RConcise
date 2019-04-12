@@ -9,19 +9,27 @@ public class RConcise {
 
     private HashMap<String, RClient> rClientHashMap;
 
-    private static RConcise sRConcise;
+    private static volatile RConcise sRConcise;
 
     private RConcise() {
         rClientHashMap = new HashMap<>();
     }
 
-    public static synchronized RConcise inst() {
+    public static RConcise inst() {
         if (sRConcise == null) {
-            sRConcise = new RConcise();
+            synchronized (RConcise.class) {
+                if (sRConcise == null) {
+                    sRConcise = new RConcise();
+                }
+            }
         }
         return sRConcise;
     }
 
+    /**
+     * 创建请求客户端
+     * @param name  名称标识
+     */
     public RClient createRClient(String name) {
         if (rClientHashMap.containsKey(name)) {
             throw new IllegalArgumentException("This name is existed.");
@@ -31,6 +39,10 @@ public class RConcise {
         return rClient;
     }
 
+    /**
+     * 通过名称获取请求Client
+     * @param name 名称
+     */
     public RClient rClient(String name) {
         return rClientHashMap.get(name);
     }
@@ -42,4 +54,5 @@ public class RConcise {
     public void removeAllRClient() {
         rClientHashMap.clear();
     }
+
 }

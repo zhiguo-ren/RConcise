@@ -19,7 +19,7 @@ import java.util.Map;
  * http 请求封装类
  * Created by Egbert on 3/1/2019.
  */
-public final class Request {
+public final class Request implements IRequest {
     private final RClient rClient;
     private final IHttpRespListener respListener;
     private final Object reqParams;
