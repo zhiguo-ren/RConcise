@@ -143,6 +143,7 @@ public class DownloadServiceImpl implements IReqService {
                                     return;
                                 }
                                 bos.write(buffer, 0, len);
+
                             }
 
                             respListener.onSuccess(downloadItem.id, downloadItem.filePath);
