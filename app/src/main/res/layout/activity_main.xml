@@ -45,4 +45,17 @@
         app:layout_constraintTop_toBottomOf="@id/title"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <Button
+        android:id="@+id/download_btn"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:text="download"
+        android:textSize="16sp"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="50dp"
+        android:layout_marginStart="20dp"
+        android:background="@android:color/holo_blue_dark"
+        app:layout_constraintTop_toBottomOf="@id/get_btn"
+        app:layout_constraintStart_toStartOf="parent" />
+
 </android.support.constraint.ConstraintLayout>

@@ -127,6 +127,20 @@ public class DownloadDao extends BaseDao<DownloadItem> {
     }
 
     /**
+     * 根据id查找下载记录对象（只从缓存中查询）
+     */
+    public DownloadItem findRecordByIdFromCached(int recordId) {
+        synchronized (DownloadDao.class) {
+            for (DownloadItem item : sDownloadList) {
+                if (item.id == recordId) {
+                    return item;
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
      * 根据id从内存中移除下载记录
      */
     public boolean delRecordFromMemory(int id) {
@@ -141,14 +155,23 @@ public class DownloadDao extends BaseDao<DownloadItem> {
         }
     }
 
+    public int delRecord(int id) {
+        synchronized (DownloadItem.class) {
+            delRecordFromMemory(id);
+            DownloadItem where = new DownloadItem();
+            where.id = id;
+            return delete(where);
+        }
+    }
+
     public int addRecord(DownloadItem item) {
         synchronized (DownloadDao.class) {
             DownloadItem existed = findRecord(item.filePath);
             if (existed == null) {
                 item.id = generateId();
                 item.priority = Priority.HIGH.getValue();
-                item.currLen = 0;
-                item.totalLen = 0;
+                item.currLen = 0L;
+                item.totalLen = 0L;
                 item.status = DownloadStatus.waiting.getValue();
                 item.startTime = sFormat.format(new Date());
                 item.endTime = "0";
@@ -179,28 +202,23 @@ public class DownloadDao extends BaseDao<DownloadItem> {
                     }
                 } else {
                     int len = sDownloadList.size();
-                    for (int i = 0; i < len; i++) {
-                        if (sDownloadList.get(i).id.intValue() == item.id) {
-                            sDownloadList.set(i, item);
-                            break;
+                    if (len > 0) {
+                        for (int i = 0; i < len; i++) {
+                            if (sDownloadList.get(i).id.intValue() == item.id) {
+                                sDownloadList.set(i, item);
+                                break;
+                            }
+                            if (i == sDownloadList.size() - 1) {
+                                sDownloadList.add(item);
+                            }
                         }
-                        if (i == sDownloadList.size() - 1) {
-                            sDownloadList.add(item);
-                        }
+                    } else {
+                        sDownloadList.add(item);
                     }
                 }
             }
         }
         return result;
-    }
-
-    public void removeCached(int id) {
-        for (DownloadItem downloadItem : sDownloadList) {
-            if (downloadItem.id == id) {
-                sDownloadList.remove(downloadItem);
-                break;
-            }
-        }
     }
 
     @Override

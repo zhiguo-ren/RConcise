@@ -2,15 +2,11 @@ package com.egbert.rconcise.download;
 
 import android.content.Context;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.TextUtils;
 
 import com.egbert.rconcise.database.dao.RDaoFactory;
 import com.egbert.rconcise.download.enums.DownloadStatus;
 import com.egbert.rconcise.download.enums.Priority;
-import com.egbert.rconcise.download.interfaces.IDownloadObserver;
-import com.egbert.rconcise.download.interfaces.IDownloadServiceCallable;
 import com.egbert.rconcise.internal.HeaderField;
 import com.egbert.rconcise.internal.Utils;
 import com.egbert.rconcise.task.ReqTask;
@@ -19,24 +15,18 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by Egbert on 3/18/2019.
  */
-public class RDownloadManager implements IDownloadServiceCallable {
+public class RDownloadManager {
     public static final String DEF_PATH = "rdownload";
     private static final String DB_NAME = "RDownload.db";
     private String packageName;
-    private byte[] lock = new byte[0];
     private DownloadDao downloadDao;
     private SimpleDateFormat dateFormat;
-    private IDownloadObserver observer;
-    private List<DownloadItem> currDownloadItems = new CopyOnWriteArrayList<>();
-    private Handler handler = new Handler(Looper.getMainLooper());
     private static volatile RDownloadManager sManager;
     private AtomicBoolean isInit = new AtomicBoolean(false);
 
@@ -66,18 +56,24 @@ public class RDownloadManager implements IDownloadServiceCallable {
         }
     }
 
-    public int download(RDownload rDownload) throws UnsupportedEncodingException, IllegalStateException,
+    public synchronized int download(RDownload rDownload) throws UnsupportedEncodingException, IllegalStateException,
             IllegalArgumentException {
         StringBuilder path = new StringBuilder();
         DownloadItem item = new DownloadItem();
-        if (!TextUtils.isEmpty(rDownload.directory())) {
-            path.append(rDownload.directory());
-            if (!rDownload.directory().endsWith(File.separator)) {
+        path.append(Environment.getExternalStorageDirectory().getAbsolutePath());
+        String dir = rDownload.directory();
+        if (!TextUtils.isEmpty(dir)) {
+            if (dir.startsWith(File.separator)) {
+                path.append(dir);
+            } else {
+                path.append(File.separator)
+                        .append(dir);
+            }
+            if (!dir.endsWith(File.separator)) {
                 path.append(File.separator);
             }
         } else {
-            path.append(Environment.getExternalStorageDirectory().getAbsolutePath())
-                    .append(File.separator)
+            path.append(File.separator)
                     .append(packageName)
                     .append(File.separator)
                     .append(DEF_PATH)
@@ -108,86 +104,78 @@ public class RDownloadManager implements IDownloadServiceCallable {
                 } else {
                     if (existedItem.totalLen != 0) {
                         RDownload.Builder builder = new RDownload.Builder(rDownload);
-                        builder.addHeader(HeaderField.RANGE.getValue(), "bytes=" + (file.length() + 1) + "-");
+                        builder.addHeader(HeaderField.RANGE.getValue(), "bytes=" + file.length() + "-");
                         rDownload = builder.build();
                     }
                     if (existedItem.currLen != file.length()) {
                         existedItem.currLen = file.length();
                     }
-                    existedItem.status = DownloadStatus.waiting.getValue();
                 }
             } else {
                 if (existedItem.reqTask == null) {
                     existedItem.url = rDownload.url();
-                    existedItem.currLen = 0;
-                    existedItem.totalLen = 0;
+                    existedItem.currLen = 0L;
+                    existedItem.totalLen = 0L;
                     existedItem.priority = Priority.HIGH.getValue();
-                    existedItem.status = DownloadStatus.waiting.getValue();
                     existedItem.startTime = dateFormat.format(new Date());
                     existedItem.endTime = "0";
                 }
             }
             if (existedItem.reqTask != null) {
-                if (existedItem.reqTask.isStart()) {
+                if (existedItem.status == DownloadStatus.waiting.getValue()
+                    || existedItem.status == DownloadStatus.starting.getValue()
+                    || existedItem.status == DownloadStatus.downloading.getValue()) {
                     rDownload.observer().onError(existedItem.id,
                             ErrorCode.DOWNLOADING, ErrorCode.DOWNLOADING.getMsg());
                 } else {
+                    existedItem.reqTask.setRDownload(rDownload);
+                    existedItem.status = DownloadStatus.waiting.getValue();
                     existedItem.reqTask.start();
                 }
             } else {
                 existedItem.reqTask = new ReqTask(rDownload);
                 existedItem.reqTask.setDownloadItem(existedItem);
-                existedItem.reqTask.setDownloadDao(downloadDao);
+                existedItem.status = DownloadStatus.waiting.getValue();
                 existedItem.reqTask.start();
             }
             downloadDao.updateRecord(existedItem);
             return existedItem.id;
         }
-        item.reqTask = new ReqTask(rDownload);
-        item.reqTask.setDownloadItem(existedItem);
-        item.reqTask.setDownloadDao(downloadDao);
         int recrodId = downloadDao.addRecord(item);
-        item.reqTask.start();
+        if (recrodId == -1) {
+            rDownload.observer().onError(item.id, ErrorCode.INSER_DB_FAILED, ErrorCode.INSER_DB_FAILED.getMsg());
+        } else {
+            item.reqTask = new ReqTask(rDownload);
+            item.reqTask.setDownloadItem(item);
+            item.reqTask.start();
+        }
         return recrodId;
     }
 
-    private boolean isDownloading(String absolutePath) {
-        for (DownloadItem downloadItem : currDownloadItems) {
-            if (downloadItem.filePath.equals(absolutePath)) {
-                return true;
+    public void pause(int downloadId) {
+        DownloadItem item = downloadDao.findRecordByIdFromCached(downloadId);
+        if (item != null) {
+            item.reqTask.pause();
+        }
+    }
+
+    public void cancel(int downloadId) {
+        DownloadItem item = downloadDao.findRecordById(downloadId);
+        if (item != null) {
+            if (item.reqTask != null) {
+                item.reqTask.pause();
+            } else {
+                downloadDao.delRecord(downloadId);
             }
         }
-        return false;
     }
 
-    @Override
-    public void onDownloadStatusChanged(DownloadItem downloadItem) {
-
+    public DownloadDao getDownloadDao() {
+        return downloadDao;
     }
 
-    @Override
-    public void onTotalLengthReceived(DownloadItem downloadItem) {
-
-    }
-
-    @Override
-    public void onCurrProgress(DownloadItem downloadItem, double downLen, long speed) {
-
-    }
-
-    @Override
-    public void onDownloadSuccess(DownloadItem downloadItem) {
-
-    }
-
-    @Override
-    public void onDownloadPause(DownloadItem downloadItem) {
-
-    }
-
-    @Override
-    public void onDownloadError(DownloadItem downloadItem, int var2, String var3) {
-
+    public DownloadItem queryById(int downloadId) {
+        return downloadDao.findRecordById(downloadId);
     }
 
 }

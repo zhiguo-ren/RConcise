@@ -1,8 +1,8 @@
 package com.egbert.rconcise.download.task;
 
+import com.egbert.rconcise.task.ReqTask;
+
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -15,14 +15,14 @@ import java.util.concurrent.TimeUnit;
 public final class DownloadThreadPoolManager {
     private static volatile DownloadThreadPoolManager sManager;
 
-    private LinkedBlockingDeque<Future<?>> deque;
+    private LinkedBlockingDeque<CustomFuturetask> deque;
     private ThreadPoolExecutor executor;
 
     private RejectedExecutionHandler handler = new RejectedExecutionHandler() {
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             try {
-                deque.put(new FutureTask<>(r, null));
+                deque.put(new CustomFuturetask((ReqTask) r, null));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -33,9 +33,9 @@ public final class DownloadThreadPoolManager {
         @Override
         public void run() {
             while (true) {
-                FutureTask futureTask = null;
+                CustomFuturetask futureTask = null;
                 try {
-                    futureTask = (FutureTask) deque.take();
+                    futureTask = deque.take();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -48,8 +48,9 @@ public final class DownloadThreadPoolManager {
 
     private DownloadThreadPoolManager() {
         deque = new LinkedBlockingDeque<>();
-        executor = new ThreadPoolExecutor(3, 4, 3,
+        executor = new ThreadPoolExecutor(5, 5, 10,
                 TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(2), handler);
+        executor.allowCoreThreadTimeOut(true);
         executor.execute(runnable);
     }
 
@@ -64,22 +65,41 @@ public final class DownloadThreadPoolManager {
         return sManager;
     }
 
-    public <T> void execute(FutureTask<T> task) throws InterruptedException {
+    public synchronized void execute(CustomFuturetask task) throws InterruptedException {
+        for (CustomFuturetask futuretask : deque) {
+            if (futuretask.getTaskId() == task.getTaskId()) {
+                return;
+            }
+        }
         deque.put(task);
     }
 
-    public <T> boolean remove(FutureTask<T> task) {
-        boolean result;
-        if (deque.contains(task)) {
-            result = deque.remove(task);
-        } else {
-            result = executor.remove(task);
+    public boolean remove(CustomFuturetask task) {
+        for (CustomFuturetask futuretask : deque) {
+            if (futuretask.getTaskId() == task.getTaskId()) {
+                return deque.remove(futuretask);
+            }
         }
-        return result;
+        for (Runnable runnable : executor.getQueue()) {
+            if (((ReqTask) runnable).getTaskId() == task.getTaskId()) {
+                return executor.remove(runnable);
+            }
+        }
+        return false;
     }
 
-    public boolean isExisted(FutureTask task) {
-        return deque.contains(task);
+    public boolean isExisted(CustomFuturetask task) {
+        for (CustomFuturetask futuretask : deque) {
+            if (task.getTaskId() == futuretask.getTaskId()) {
+                return true;
+            }
+        }
+        for (Runnable runnable : executor.getQueue()) {
+            if (((ReqTask) runnable).getTaskId() == task.getTaskId()) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

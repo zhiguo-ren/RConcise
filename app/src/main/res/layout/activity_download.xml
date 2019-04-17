@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="RDownlaod 文件下载使用demo"
+        android:textSize="18sp"
+        android:textColor="@android:color/black"
+        android:gravity="center"
+        android:background="@android:color/background_light" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal">
+
+        <Button
+            android:id="@+id/downlaod_1"
+            android:layout_width="150dp"
+            android:layout_height="50dp"
+            android:text="download1"
+            android:textSize="12sp"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="50dp"
+            android:layout_marginEnd="20dp"
+            android:background="@android:color/holo_blue_dark" />
+
+        <Button
+            android:id="@+id/downlaod_2"
+            android:layout_width="150dp"
+            android:layout_height="50dp"
+            android:text="download2"
+            android:textSize="12sp"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="50dp"
+            android:background="@android:color/holo_blue_dark" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal">
+
+        <Button
+            android:id="@+id/downlaod_3"
+            android:layout_width="150dp"
+            android:layout_height="50dp"
+            android:text="download3"
+            android:textSize="12sp"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="50dp"
+            android:layout_marginEnd="20dp"
+            android:background="@android:color/holo_blue_dark" />
+
+        <Button
+            android:id="@+id/downlaod_4"
+            android:layout_width="150dp"
+            android:layout_height="50dp"
+            android:text="download4"
+            android:textSize="12sp"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="50dp"
+            android:background="@android:color/holo_blue_dark" />
+
+    </LinearLayout>
+
+
+
+</LinearLayout>

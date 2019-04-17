@@ -63,9 +63,6 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
             cursor = database.rawQuery(sql, null);
             String[] columnNames = cursor.getColumnNames();
             Field[] fields = entityClass.getDeclaredFields();
-            for (Field field : fields) {
-                field.setAccessible(true);
-            }
             for (String columnName : columnNames) {
                 Field colField = null;
                 for (Field field : fields) {
@@ -84,7 +81,6 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
                 if (colField != null) {
                     cacheMap.put(columnName, colField);
                 }
-
             }
         } catch (Exception e) {
             Log.e(BaseDao.class.getSimpleName(), Log.getStackTraceString(e));

@@ -2,8 +2,9 @@ package com.egbert.rconcise.task;
 
 import android.util.Log;
 
-import com.egbert.rconcise.download.DownloadDao;
 import com.egbert.rconcise.download.DownloadItem;
+import com.egbert.rconcise.download.RDownload;
+import com.egbert.rconcise.download.task.CustomFuturetask;
 import com.egbert.rconcise.download.task.DownloadThreadPoolManager;
 import com.egbert.rconcise.internal.http.IRequest;
 import com.egbert.rconcise.internal.http.Request;
@@ -11,14 +12,13 @@ import com.egbert.rconcise.service.DownloadServiceImpl;
 import com.egbert.rconcise.service.IReqService;
 import com.egbert.rconcise.service.ReqServiceImpl;
 
-import java.util.concurrent.FutureTask;
-
 /**
  * Created by Egbert on 2/25/2019.
  */
 public class ReqTask implements Runnable {
+    private int taskId;
     private IReqService reqService;
-    private FutureTask futureTask;
+    private CustomFuturetask futureTask;
 
     public ReqTask(IRequest request) {
         if (request instanceof Request) {
@@ -30,11 +30,16 @@ public class ReqTask implements Runnable {
     }
 
     public void setDownloadItem(DownloadItem item) {
+        this.taskId = item.id;
         ((DownloadServiceImpl) this.reqService).setDownloadItem(item);
     }
 
-    public void setDownloadDao(DownloadDao dao) {
-        ((DownloadServiceImpl) this.reqService).setDownloadDao(dao);
+    public void setRDownload(RDownload rDownload) {
+        this.reqService.setRequest(rDownload);
+    }
+
+    public int getTaskId() {
+        return taskId;
     }
 
     @Override
@@ -44,12 +49,11 @@ public class ReqTask implements Runnable {
 
     public synchronized void start() {
         if (futureTask == null) {
-            futureTask = new FutureTask(this, null);
+            futureTask = new CustomFuturetask(this, null);
         }
+        ((DownloadServiceImpl) reqService).resume();
         try {
-            if (!isStart()) {
-                DownloadThreadPoolManager.getInst().execute(futureTask);
-            }
+            DownloadThreadPoolManager.getInst().execute(futureTask);
         } catch (InterruptedException e) {
             Log.e(ReqTask.class.getSimpleName(), Log.getStackTraceString(e));
         }
@@ -59,11 +63,20 @@ public class ReqTask implements Runnable {
         ((DownloadServiceImpl) reqService).pause();
         if (futureTask != null) {
             DownloadThreadPoolManager.getInst().remove(futureTask);
+            futureTask = null;
+        }
+    }
+
+    public void cancel() {
+        ((DownloadServiceImpl) reqService).cancel();
+        if (futureTask != null) {
+            DownloadThreadPoolManager.getInst().remove(futureTask);
+            futureTask = null;
         }
     }
 
     public boolean isStart() {
-        return futureTask != null && DownloadThreadPoolManager.getInst().isExisted(futureTask);
+        return futureTask != null || DownloadThreadPoolManager.getInst().isExisted(futureTask);
     }
 
 }

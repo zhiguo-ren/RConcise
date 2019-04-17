@@ -28,7 +28,7 @@ public interface IDownloadObserver {
      * @param downloadPercent 下载的百分比
      * @param speed 下载速度
      */
-    void onCurrProgress(int downloadId, double downloadPercent, long speed);
+    void onProgress(int downloadId, int downloadPercent, String speed, long bytes);
 
     /**
      * 下载成功

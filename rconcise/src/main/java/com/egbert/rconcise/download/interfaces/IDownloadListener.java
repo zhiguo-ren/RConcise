@@ -18,4 +18,6 @@ public interface IDownloadListener {
     void onFailure(int downloadId, ErrorCode code, int httpCode, String msg);
 
     void onTotalLength(int downloadId, long length);
+
+    void onProgress(int downloadId, int percent, String speed, long bytes);
 }

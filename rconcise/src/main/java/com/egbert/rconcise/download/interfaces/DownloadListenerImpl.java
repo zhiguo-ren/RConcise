@@ -77,7 +77,26 @@ public class DownloadListenerImpl implements IDownloadListener {
     }
 
     @Override
-    public void onTotalLength(int downloadId, long length) {
+    public void onProgress(final int downloadId, final int percent, final String speed, final long bytes) {
+        if (observer != null) {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    observer.onProgress(downloadId, percent, speed, bytes);
+                }
+            });
+        }
+    }
 
+    @Override
+    public void onTotalLength(final int downloadId, final long length) {
+        if (observer != null) {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    observer.onTotalLength(downloadId, length);
+                }
+            });
+        }
     }
 }

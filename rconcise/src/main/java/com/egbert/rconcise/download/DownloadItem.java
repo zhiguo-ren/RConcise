@@ -13,12 +13,12 @@ public class DownloadItem extends BaseItem<DownloadItem> {
      * 下载文件当前大小
      */
     @FieldName("curr_len")
-    public long currLen;
+    public Long currLen;
     /**
      * 下载文件总大小
      */
     @FieldName("total_len")
-    public long totalLen;
+    public Long totalLen;
     /**
      * 下载文件显示名
      */
@@ -72,7 +72,6 @@ public class DownloadItem extends BaseItem<DownloadItem> {
     public Integer status;
 
     public transient ReqTask reqTask;
-    public transient String packageName;
 
     public DownloadItem() {
     }
