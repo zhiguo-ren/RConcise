@@ -95,7 +95,7 @@ public class DownloadActivity extends AppCompatActivity implements View.OnClickL
             DownloadItem item = RDownloadManager.inst().queryById(tmpId);
             if (item.status == DownloadStatus.waiting.getValue()
                     || item.status == DownloadStatus.downloading.getValue()) {
-                item.reqTask.cancel();
+                item.reqTask.pause();
                 //RDownloadManager.inst().pause(tmpId); 此方法也可以暂停
             } else if (item.status == DownloadStatus.pause.getValue()) {
                 download.setText("waiting");

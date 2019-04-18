@@ -41,6 +41,7 @@ public class DownloadServiceImpl implements IReqService {
     private IDownloadListener respListener;
     private AtomicBoolean isPause = new AtomicBoolean(false);
     private AtomicBoolean isCancel = new AtomicBoolean(false);
+    private AtomicBoolean isFirstProgress = new AtomicBoolean(false);
 
     @Override
     public void setRequest(IRequest request) {
@@ -139,7 +140,7 @@ public class DownloadServiceImpl implements IReqService {
                     bis = new BufferedInputStream(connection.getInputStream());
                     fos = new FileOutputStream(file, true);
 
-                    DecimalFormat df = new DecimalFormat("#.#");
+                    DecimalFormat df = new DecimalFormat("#.##");
 
                     byte[] buffer = new byte[1024];
                     //每秒多少k
@@ -154,6 +155,11 @@ public class DownloadServiceImpl implements IReqService {
                     long startTime = System.currentTimeMillis();
                     int readLen;
                     while ((readLen = bis.read(buffer)) != -1) {
+                        // 首次显示进度0%或上次下载的进度，以后每隔2% 更新一次进度
+                        if (isFirstProgress.compareAndSet(false, true)) {
+                            respListener.onProgress(downloadItem.id, (int) (getLen / (double) totalLen * 100),
+                                    "0 K/s", getLen);
+                        }
                         if (isPause()) {
                             pauseStatus();
                             return;
