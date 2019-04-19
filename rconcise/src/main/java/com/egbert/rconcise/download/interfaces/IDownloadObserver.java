@@ -40,7 +40,7 @@ public interface IDownloadObserver {
     /**
      * 取消任务
      */
-    void onCancel(String msg);
+    void onCancel(ErrorCode code);
 
     /**
      * 下载失败监听

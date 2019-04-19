@@ -34,7 +34,7 @@ public class DownloadListenerImpl implements IDownloadListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    observer.onCancel("任务已取消，文件已删除");
+                    observer.onCancel(ErrorCode.CANCEL);
                 }
             });
         }

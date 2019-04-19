@@ -16,7 +16,8 @@ public enum ErrorCode {
     INVALID_LENGTH      (5, "ContentLength <= 0"),
     CREATE_FILE_FAILED  (6, "创建文件失败"),
     CREATE_DIR_FAILED   (7, "创建文件目录失败"),
-    INSER_DB_FAILED     (8, "插入数据库失败，请确认文件路径是否重复或下载任务是否重复添加");
+    INSER_DB_FAILED     (8, "插入数据库失败，请确认文件路径是否重复或下载任务是否重复添加"),
+    CANCEL              (9, "下载任务已取消");
 
     private int code;
     private String msg;

@@ -84,11 +84,13 @@ public class DownloadActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onCancel(String msg) {
-                        holder.setText(R.id.speed_tv, "下载已取消");
+                    public void onCancel(ErrorCode code) {
+                        holder.setText(R.id.speed_tv, code.getMsg());
                         holder.setText(R.id.curr_and_total_tv, "");
                         helper.setImageResource(R.id.action_btn, android.R.drawable.ic_media_play);
                         holder.setVisible(R.id.action_btn, true);
+                        BGAProgressBar progressBar = holder.getView(R.id.pb);
+                        progressBar.setProgress(0);
                     }
 
                     @Override
@@ -104,7 +106,7 @@ public class DownloadActivity extends AppCompatActivity {
                         holder.setText(R.id.curr_and_total_tv, format.format(bytes / 1024d / 1024) + "MB/"
                                 + item.total);
                         holder.setText(R.id.speed_tv, speed);
-                        final BGAProgressBar progressBar = holder.getView(R.id.pb);
+                        BGAProgressBar progressBar = holder.getView(R.id.pb);
                         progressBar.setProgress(downloadPercent);
                     }
 
