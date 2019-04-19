@@ -67,8 +67,11 @@ public class ReqTask implements Runnable {
         }
     }
 
-    public void cancel() {
-        ((DownloadServiceImpl) reqService).cancel();
+    /**
+     * @param isDelFile  是否删除文件  true 删除 false 不删除
+     */
+    public void cancel(boolean isDelFile) {
+        ((DownloadServiceImpl) reqService).cancel(isDelFile);
         if (futureTask != null) {
             DownloadThreadPoolManager.getInst().remove(futureTask);
             futureTask = null;

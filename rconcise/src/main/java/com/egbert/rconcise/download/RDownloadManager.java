@@ -45,6 +45,7 @@ public class RDownloadManager {
     }
 
     /**
+     * 在主activity或者application 等入口出调用，且应用只需调用一次
      * 初始化方法
      */
     public synchronized void init(Context context) {
@@ -154,26 +155,44 @@ public class RDownloadManager {
 
     public void pause(int downloadId) {
         DownloadItem item = downloadDao.findRecordByIdFromCached(downloadId);
-        if (item != null) {
+        if (item != null && item.reqTask != null) {
             item.reqTask.pause();
         }
     }
 
-    public void cancel(int downloadId) {
+    /**
+     * @param downloadId 下载任务id
+     * @param isDelFile 是否删除已下载的文件  true 删除  false 不删除
+     */
+    public void cancel(int downloadId, boolean isDelFile) {
         DownloadItem item = downloadDao.findRecordById(downloadId);
         if (item != null) {
             if (item.reqTask != null) {
-                item.reqTask.pause();
+                item.reqTask.cancel(isDelFile);
             } else {
+                if (isDelFile) {
+                    File file = new File(item.filePath);
+                    if (file.exists()) {
+                        file.delete();
+                    }
+                }
                 downloadDao.delRecord(downloadId);
             }
         }
     }
 
+    /**
+     * @return 返回download 数据库 操作类 可进行增删改查操作
+     */
     public DownloadDao getDownloadDao() {
         return downloadDao;
     }
 
+    /**
+     * 根据id查询下载实体bean
+     * @param downloadId 下载任务id
+     * @return 返回下载实体对象
+     */
     public DownloadItem queryById(int downloadId) {
         return downloadDao.findRecordById(downloadId);
     }

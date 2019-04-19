@@ -3,28 +3,28 @@ package com.egbert.rconcisecase;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.Button;
 
-import com.egbert.rconcise.download.DownloadItem;
+import com.chad.library.adapter.base.BaseQuickAdapter;
+import com.chad.library.adapter.base.BaseViewHolder;
 import com.egbert.rconcise.download.ErrorCode;
 import com.egbert.rconcise.download.RDownload;
 import com.egbert.rconcise.download.RDownloadManager;
-import com.egbert.rconcise.download.enums.DownloadStatus;
 import com.egbert.rconcise.download.interfaces.IDownloadObserver;
+import com.egbert.rconcisecase.model.Download;
+
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+
+import cn.bingoogolapple.progressbar.BGAProgressBar;
 
 /**
  * Created by Egbert on 4/136/2019.
  */
-public class DownloadActivity extends AppCompatActivity implements View.OnClickListener {
-    private Button download1;
-    private Button download2;
-    private Button download3;
-    private Button download4;
-    private Integer id1 = -1;
-    private Integer id2 = -1;
-    private Integer id3 = -1;
-    private Integer id4 = -1;
+public class DownloadActivity extends AppCompatActivity {
+    private RecyclerView downloadRv;
     private String url1 = "http://gdown.baidu.com/data/wisegame/8be18d2c0dc8a9c9/WPSOffice_177.apk";
     private String url2 = "http://p.gdown.baidu.com/dedecc0aa26733ddce51b9d54f280ca2860db9abdc9a2cf8e11e09e5fb9bac3efc0d562cecb851d7f33309943e93a0f05339e654b0027543526de7113f007a159802aba6d6f9a805141cf0cf4368df61489caf81af92839daffa2b5a44bc7665fa311acf5330e662e206cf28f6cc6500a70c533a43178fec0186ded2149005ba88ddbdf2e50c4dd0f42f9b7ba67250324fd0ec612ac9a5f5";
     private String url3 = "http://appdl.hicloud.com/dl/appdl/application/apk/8c/8cac505994d24872ae1b36a6cf3a4a01/com.smile.gifmaker.1904101502.apk?sign=portal@portal1555383344149&source=portalsite";
@@ -34,111 +34,134 @@ public class DownloadActivity extends AppCompatActivity implements View.OnClickL
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_download);
-        download1 = findViewById(R.id.downlaod_1);
-        download2 = findViewById(R.id.downlaod_2);
-        download3 = findViewById(R.id.downlaod_3);
-        download4 = findViewById(R.id.downlaod_4);
-        download1.setOnClickListener(this);
-        download2.setOnClickListener(this);
-        download3.setOnClickListener(this);
-        download4.setOnClickListener(this);
+        downloadRv = findViewById(R.id.download_rv);
+        DownloadAdapter adapter = new DownloadAdapter();
+        downloadRv.setAdapter(adapter);
+        downloadRv.setLayoutManager(new LinearLayoutManager(this));
+        adapter.setNewData(createData());
     }
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.downlaod_1:
-                handleStatus(1, download1, url1, "", "");
-                break;
-            case R.id.downlaod_2:
-                handleStatus(2, download2, url2, "", "baidu.apk");
-                break;
-            case R.id.downlaod_3:
-                handleStatus(3, download3, url3, "rdownlaodtest/files", "");
-                break;
-            case R.id.downlaod_4:
-                handleStatus(4, download4, url4, "/", "");
-                break;
-            default: break;
-        }
+    private ArrayList<Download> createData() {
+        ArrayList<Download> task = new ArrayList<>();
+        Download download1 = new Download();
+        download1.url = url1;
+
+        Download download2 = new Download();
+        download2.url = url2;
+        download2.fileName = "baidu.apk";
+
+        Download download3 = new Download();
+        download3.url = url3;
+        download3.filePath = "/rdownload/files"; // 下载到根目录下的rdownload/files
+
+        Download download4 = new Download();
+        download4.url = url4;
+        download4.filePath = "/"; // 下载到sd卡根目录 只需要用/
+
+        task.add(download1);
+        task.add(download2);
+        task.add(download3);
+        task.add(download4);
+        return task;
     }
 
-    private void handleStatus(int flag, Button download, String url, String filePath, String fileName) {
-        int tmpId;
-        if (flag == 1) {
-            tmpId = id1;
-        } else if (flag == 2) {
-            tmpId = id2;
-        } else if (flag == 3) {
-            tmpId = id3;
-        } else {
-            tmpId = id4;
-        }
-        if (tmpId == -1) {
-            tmpId = downloadFile(download, url, filePath, fileName);
-            if (flag == 1) {
-                id1 = tmpId;
-            } else if (flag == 2) {
-                id2 = tmpId;
-            } else if (flag == 3) {
-                id3 = tmpId;
-            } else {
-                id4 = tmpId;
-            }
-            if (tmpId != -1) {
-                DownloadItem item = RDownloadManager.inst().queryById(tmpId);
-                if (item.status == DownloadStatus.waiting.getValue()) {
-                    download.setText("waiting");
-                }
-            }
-        } else {
-            DownloadItem item = RDownloadManager.inst().queryById(tmpId);
-            if (item.status == DownloadStatus.waiting.getValue()
-                    || item.status == DownloadStatus.downloading.getValue()) {
-                item.reqTask.pause();
-                //RDownloadManager.inst().pause(tmpId); 此方法也可以暂停
-            } else if (item.status == DownloadStatus.pause.getValue()) {
-                download.setText("waiting");
-                downloadFile(download, url, filePath, fileName);
-            }
-        }
-    }
+    private static class DownloadAdapter extends BaseQuickAdapter<Download, BaseViewHolder> {
+        private DecimalFormat format;
 
-    private int downloadFile(final Button downlaod, String url, String filePath, String fileName) {
-        return RDownload.Builder.create(url)
-                .directory(filePath)
-                .fileName(fileName)
-                .downloadObserver(new IDownloadObserver() {
+        public DownloadAdapter() {
+            super(R.layout.item_download_rv);
+            format = new DecimalFormat("#.##");
+        }
+
+        @Override
+        protected void convert(final BaseViewHolder helper, final Download item) {
+            final BaseViewHolder holder = helper;
+            if (item.downloadItem == null) {
+                item.observer = new IDownloadObserver() {
                     @Override
                     public void onPause(int downloadId) {
-                        downlaod.setText("pause");
+                        holder.setText(R.id.speed_tv, "暂停下载");
+                    }
+
+                    @Override
+                    public void onCancel(String msg) {
+                        holder.setText(R.id.speed_tv, "下载已取消");
+                        holder.setText(R.id.curr_and_total_tv, "");
+                        helper.setImageResource(R.id.action_btn, android.R.drawable.ic_media_play);
+                        holder.setVisible(R.id.action_btn, true);
                     }
 
                     @Override
                     public void onTotalLength(int downloadId, long totalLength) {
-                        downlaod.setText("downloading");
+                        holder.setText(R.id.file_name_tv, item.downloadItem.fileName);
+                        item.total = format.format( totalLength / 1024d / 1024) + "MB";
+                        long curr = item.downloadItem.currLen;
+                        holder.setText(R.id.curr_and_total_tv, curr + "MB/" + item.total);
                     }
 
                     @Override
-                    public void onProgress(int downloadId, int downloadPercent, String speed, long bytes) {
-                        downlaod.setText(downloadPercent + "%--" + speed);
+                    public void onProgress(int downloadId, final int downloadPercent, String speed, long bytes) {
+                        holder.setText(R.id.curr_and_total_tv, format.format(bytes / 1024d / 1024) + "MB/"
+                                + item.total);
+                        holder.setText(R.id.speed_tv, speed);
+                        final BGAProgressBar progressBar = holder.getView(R.id.pb);
+                        progressBar.setProgress(downloadPercent);
                     }
 
                     @Override
                     public void onSuccess(int downloadId, String filePath) {
-//                        downlaod.setText("success");
+                        holder.setText(R.id.speed_tv, "下载完成");
+                        holder.setVisible(R.id.action_btn, false);
                     }
 
                     @Override
                     public void onError(int downloadId, ErrorCode code, String msg) {
-                        downlaod.setText(msg);
+                        holder.setText(R.id.speed_tv, msg);
+                        item.isStart = false;
                     }
 
                     @Override
                     public void onFailure(int downloadId, ErrorCode code, int httpCode, String msg) {
-                        downlaod.setText(httpCode + "--" + msg);
+                        holder.setText(R.id.speed_tv, msg);
+                        holder.setImageResource(R.id.action_btn, android.R.drawable.ic_media_play);
                     }
-                })
-                .download();
+                };
+            }
+
+            holder.getView(R.id.action_btn).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!item.isStart) {
+                        item.isStart = true;
+                        item.id = downloadFile(item.url, item.filePath, item.fileName, item.observer);
+                        item.downloadItem = RDownloadManager.inst().queryById(item.id);
+                        item.isCancel = false;
+                    } else {
+                        item.isStart = false;
+                        item.downloadItem.reqTask.pause();
+                    }
+                    holder.setImageResource(R.id.action_btn, item.isStart
+                            ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
+                }
+            });
+            holder.getView(R.id.del_btn).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!item.isCancel) {
+                        item.isCancel = true;
+                        item.isStart = false;
+                        RDownloadManager.inst().cancel(item.id, true);
+                    }
+                }
+            });
+        }
+
+        private int downloadFile(String url, String filePath, String fileName, IDownloadObserver observer) {
+            return RDownload.Builder.create(url)
+                    .directory(filePath)
+                    .fileName(fileName)
+                    .downloadObserver(observer)
+                    .download();
+        }
     }
 }

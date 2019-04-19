@@ -9,11 +9,6 @@ import com.egbert.rconcise.download.ErrorCode;
 public interface IDownloadObserver {
 
     /**
-     * 暂停下载
-     */
-    void onPause(int downloadId);
-
-    /**
      * 获取下载文件总长度
      *
      * @param downloadId 下载id
@@ -27,6 +22,7 @@ public interface IDownloadObserver {
      * @param downloadId 下载id
      * @param downloadPercent 下载的百分比
      * @param speed 下载速度
+     * @param bytes 累计已下载字节数
      */
     void onProgress(int downloadId, int downloadPercent, String speed, long bytes);
 
@@ -34,6 +30,17 @@ public interface IDownloadObserver {
      * 下载成功
      */
     void onSuccess(int downloadId, String filePath);
+
+
+    /**
+     * 暂停下载
+     */
+    void onPause(int downloadId);
+
+    /**
+     * 取消任务
+     */
+    void onCancel(String msg);
 
     /**
      * 下载失败监听

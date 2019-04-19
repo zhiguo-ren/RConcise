@@ -15,62 +15,10 @@
         android:gravity="center"
         android:background="@android:color/background_light" />
 
-    <LinearLayout
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/download_rv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal">
-
-        <Button
-            android:id="@+id/downlaod_1"
-            android:layout_width="150dp"
-            android:layout_height="50dp"
-            android:text="download1"
-            android:textSize="12sp"
-            android:textColor="@android:color/white"
-            android:layout_marginTop="50dp"
-            android:layout_marginEnd="20dp"
-            android:background="@android:color/holo_blue_dark" />
-
-        <Button
-            android:id="@+id/downlaod_2"
-            android:layout_width="150dp"
-            android:layout_height="50dp"
-            android:text="download2"
-            android:textSize="12sp"
-            android:textColor="@android:color/white"
-            android:layout_marginTop="50dp"
-            android:background="@android:color/holo_blue_dark" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal">
-
-        <Button
-            android:id="@+id/downlaod_3"
-            android:layout_width="150dp"
-            android:layout_height="50dp"
-            android:text="download3"
-            android:textSize="12sp"
-            android:textColor="@android:color/white"
-            android:layout_marginTop="50dp"
-            android:layout_marginEnd="20dp"
-            android:background="@android:color/holo_blue_dark" />
-
-        <Button
-            android:id="@+id/downlaod_4"
-            android:layout_width="150dp"
-            android:layout_height="50dp"
-            android:text="download4"
-            android:textSize="12sp"
-            android:textColor="@android:color/white"
-            android:layout_marginTop="50dp"
-            android:background="@android:color/holo_blue_dark" />
-
-    </LinearLayout>
-
-
+        android:layout_marginTop="20dp"/>
 
 </LinearLayout>

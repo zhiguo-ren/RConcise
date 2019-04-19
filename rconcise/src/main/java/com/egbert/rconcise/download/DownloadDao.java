@@ -42,12 +42,18 @@ public class DownloadDao extends BaseDao<DownloadItem> {
         int maxId = 0;
         String sql = "select max(id) from " + tableName;
         synchronized (this) {
-            try (Cursor cursor = database.rawQuery(sql, null)) {
+            Cursor cursor = null;
+            try {
+                cursor = database.rawQuery(sql, null);
                 if (cursor.moveToNext()) {
                     int index = cursor.getColumnIndex("max(id)");
                     if (index != -1) {
                         maxId = cursor.getInt(index);
                     }
+                }
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
                 }
             }
         }

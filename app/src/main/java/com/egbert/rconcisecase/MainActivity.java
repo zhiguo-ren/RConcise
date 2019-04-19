@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (grant != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, permissions, WRITE_REQUEST_CODE);
         } else {
+            //初始化下载管理类 需要有读写存储权限
             RDownloadManager.inst().init(this);
         }
     }

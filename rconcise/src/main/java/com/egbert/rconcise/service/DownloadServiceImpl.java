@@ -42,6 +42,7 @@ public class DownloadServiceImpl implements IReqService {
     private AtomicBoolean isPause = new AtomicBoolean(false);
     private AtomicBoolean isCancel = new AtomicBoolean(false);
     private AtomicBoolean isFirstProgress = new AtomicBoolean(false);
+    private boolean isDelFile;
 
     @Override
     public void setRequest(IRequest request) {
@@ -247,9 +248,11 @@ public class DownloadServiceImpl implements IReqService {
     private synchronized void cancelStatus() {
         if (downloadDao.findRecordByIdFromCached(downloadItem.id) != null) {
             respListener.onCancel(downloadItem.id);
-            File file = new File(downloadItem.filePath);
-            if (file.exists()) {
-                file.delete();
+            if (isDelFile) {
+                File file = new File(downloadItem.filePath);
+                if (file.exists()) {
+                    file.delete();
+                }
             }
             downloadDao.delRecord(downloadItem.id);
         }
@@ -265,8 +268,9 @@ public class DownloadServiceImpl implements IReqService {
         return isPause.get();
     }
 
-    public void cancel() {
+    public void cancel(boolean isDelFile) {
         isCancel.compareAndSet(false, true);
+        this.isDelFile = isDelFile;
         cancelStatus();
     }
 
