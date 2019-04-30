@@ -5,8 +5,9 @@ import android.os.Environment;
 import android.text.TextUtils;
 
 import com.egbert.rconcise.database.dao.RDaoFactory;
-import com.egbert.rconcise.download.enums.DownloadStatus;
-import com.egbert.rconcise.download.enums.Priority;
+import com.egbert.rconcise.enums.TaskStatus;
+import com.egbert.rconcise.enums.Priority;
+import com.egbert.rconcise.internal.ErrorCode;
 import com.egbert.rconcise.internal.HeaderField;
 import com.egbert.rconcise.internal.Utils;
 import com.egbert.rconcise.task.ReqTask;
@@ -18,12 +19,14 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.egbert.rconcise.database.dao.RDaoFactory.DB_NAME;
+
 /**
+ * 下载管理类，创建下载所需资源并发起下载任务<br><br>
  * Created by Egbert on 3/18/2019.
  */
 public class RDownloadManager {
-    public static final String DEF_PATH = "rdownload";
-    private static final String DB_NAME = "RDownload.db";
+    private static final String DEF_PATH = "rdownload";
     private String packageName;
     private DownloadDao downloadDao;
     private SimpleDateFormat dateFormat;
@@ -96,8 +99,8 @@ public class RDownloadManager {
             File file = new File(existedItem.filePath);
             if (file.exists()) {
                 if (file.length() == existedItem.totalLen && existedItem.totalLen != 0) {
-                    if (existedItem.status != DownloadStatus.finish.getValue()) {
-                        existedItem.status = DownloadStatus.finish.getValue();
+                    if (existedItem.status != TaskStatus.finish.getValue()) {
+                        existedItem.status = TaskStatus.finish.getValue();
                         downloadDao.updateRecord(existedItem);
                     }
                     rDownload.observer().onError(existedItem.id, ErrorCode.EXIST, ErrorCode.EXIST.getMsg());
@@ -123,20 +126,20 @@ public class RDownloadManager {
                 }
             }
             if (existedItem.reqTask != null) {
-                if (existedItem.status == DownloadStatus.waiting.getValue()
-                    || existedItem.status == DownloadStatus.starting.getValue()
-                    || existedItem.status == DownloadStatus.downloading.getValue()) {
+                if (existedItem.status == TaskStatus.waiting.getValue()
+                    || existedItem.status == TaskStatus.starting.getValue()
+                    || existedItem.status == TaskStatus.running.getValue()) {
                     rDownload.observer().onError(existedItem.id,
                             ErrorCode.DOWNLOADING, ErrorCode.DOWNLOADING.getMsg());
                 } else {
                     existedItem.reqTask.setRDownload(rDownload);
-                    existedItem.status = DownloadStatus.waiting.getValue();
+                    existedItem.status = TaskStatus.waiting.getValue();
                     existedItem.reqTask.start();
                 }
             } else {
                 existedItem.reqTask = new ReqTask(rDownload);
                 existedItem.reqTask.setDownloadItem(existedItem);
-                existedItem.status = DownloadStatus.waiting.getValue();
+                existedItem.status = TaskStatus.waiting.getValue();
                 existedItem.reqTask.start();
             }
             downloadDao.updateRecord(existedItem);
@@ -153,6 +156,10 @@ public class RDownloadManager {
         return recrodId;
     }
 
+    /**
+     * 通过id暂停该id对应的下载任务
+     * @param downloadId 下载任务id
+     */
     public void pause(int downloadId) {
         DownloadItem item = downloadDao.findRecordByIdFromCached(downloadId);
         if (item != null && item.reqTask != null) {

@@ -19,6 +19,7 @@ import com.egbert.rconcise.internal.http.Request;
 import com.egbert.rconcise.listener.IRespListener;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    public static final String RCLIENT_KEY = "test";
     private static final int WRITE_REQUEST_CODE = 1;
     public static final String BASE_URL = "http://192.168.1.36:8080/tmall/";
     public static final String URL = "app/cs";
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button buttonGet;
     private Button buttonPost;
     private Button download;
+    private Button upload;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,14 +36,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         buttonGet = findViewById(R.id.get_btn);
         buttonPost = findViewById(R.id.post_btn);
         download = findViewById(R.id.download_btn);
+        upload = findViewById(R.id.upload_btn);
         buttonGet.setOnClickListener(this);
         buttonPost.setOnClickListener(this);
         download.setOnClickListener(this);
-        RClient rClient = RConcise.inst().createRClient("test");
+        upload.setOnClickListener(this);
+        RClient rClient = RConcise.inst().createRClient(RCLIENT_KEY);
         rClient.setBaseUrl(BASE_URL);
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
         interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-        rClient.setInterceptor(interceptor);
+        rClient.addInterceptor(interceptor);
         reqPermission();
     }
 
@@ -86,6 +90,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.download_btn:
                 startActivity(new Intent(this, DownloadActivity.class));
+                break;
+            case R.id.upload_btn:
+                startActivity(new Intent(this, UploadActivity.class));
                 break;
             default: break;
         }

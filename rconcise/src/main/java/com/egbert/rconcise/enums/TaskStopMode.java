@@ -1,12 +1,12 @@
-package com.egbert.rconcise.download.enums;
+package com.egbert.rconcise.enums;
 
 /**
  * Created by Egbert on 3/18/2019.
  */
-public enum DownloadStopMode {
+public enum TaskStopMode {
 
     /**
-     * 后台根据下载优先级调度自动停止下载任务
+     * 自动停止下载任务
      */
     auto(0),
 
@@ -15,7 +15,7 @@ public enum DownloadStopMode {
      */
     hand(1);
 
-    DownloadStopMode(Integer value) {
+    TaskStopMode(Integer value) {
         this.value = value;
     }
 
@@ -32,12 +32,12 @@ public enum DownloadStopMode {
         this.value = value;
     }
 
-    public static DownloadStopMode getInst(int value) {
-        for (DownloadStopMode mode : DownloadStopMode.values()) {
+    public static TaskStopMode getInst(int value) {
+        for (TaskStopMode mode : TaskStopMode.values()) {
             if (mode.getValue() == value) {
                 return mode;
             }
         }
-        return DownloadStopMode.auto;
+        return TaskStopMode.auto;
     }
 }

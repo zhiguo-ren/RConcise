@@ -1,12 +1,12 @@
 package com.egbert.rconcise.internal;
 
 /**
+ * http协议 请求和响应头中的属性字段枚举类<p><br>
  * Created by Egbert on 2/26/2019.
- * http协议 请求和响应头中的属性字段枚举类
  */
 public enum HeaderField {
     /**
-     * http 请求和响应头中常用的属性字段
+     * http 请求和响应头中常用的属性字段的key
      */
     ACCEPT                  ("Accept"),
     ACCEPT_CHARSET          ("Accept-Charset"),

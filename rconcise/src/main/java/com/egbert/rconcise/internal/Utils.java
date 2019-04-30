@@ -14,7 +14,6 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -98,7 +97,7 @@ public class Utils {
                 builder.append(entry.getKey())
                         .append("=")
                         .append(isGet ? URLEncoder.encode(String.valueOf(entry.getValue()),
-                                StandardCharsets.UTF_8.name()) : entry.getValue())
+                                Const.UTF8) : entry.getValue())
                         .append("&");
             }
             builder.deleteCharAt(builder.lastIndexOf("&"));
@@ -114,21 +113,21 @@ public class Utils {
     }
 
     public static byte[] paramsToByte(String contentType, Object reqParams) throws UnsupportedEncodingException {
-        String tmpType = null;
+        String tmpType = ContentType.FORM_URLENCODED.getValue();
         byte[] params = null;
         if (TextUtils.isEmpty(contentType)) {
-            contentType = tmpType = ContentType.FORM_URLENCODED.getContentType();
+            contentType = tmpType;
         }
         if (tmpType.contains(contentType)) {
             StringBuilder builder = Utils.parseParams(reqParams, false);
             if (builder != null && builder.length() > 0) {
-                params = builder.toString().getBytes(StandardCharsets.UTF_8);
+                params = builder.toString().getBytes(Const.UTF8);
             }
-        } else if (ContentType.JSON.getContentType().contains(contentType)) {
+        } else if (ContentType.JSON.getValue().contains(contentType)) {
             String json = new Gson().toJson(reqParams);
-            params = json.getBytes(StandardCharsets.UTF_8);
+            params = json.getBytes(Const.UTF8);
         } else {
-            params = reqParams.toString().getBytes(StandardCharsets.UTF_8);
+            params = reqParams.toString().getBytes(Const.UTF8);
         }
         return params;
     }
@@ -145,7 +144,7 @@ public class Utils {
             if (!decodedUrl.endsWith("/")) {
                 int index = decodedUrl.lastIndexOf('/') + 1;
                 if (index > 0) {
-                    filename = URLDecoder.decode(decodedUrl.substring(index), StandardCharsets.UTF_8.name());
+                    filename = URLDecoder.decode(decodedUrl.substring(index), Const.UTF8);
                 }
             }
         }

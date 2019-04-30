@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * http 请求封装类
+ * http 请求封装类,通过该类封装请求信息<p>
  * Created by Egbert on 3/1/2019.
  */
 public final class Request implements IRequest {
@@ -28,12 +28,12 @@ public final class Request implements IRequest {
     private final String method;
 
     /**
-     * method  请求方法必须全部大写
-     * reqParams 请求参数的对象，可以为bean实体类和map对象，字段值统一用String
-     * url  请求地址
-     * header  请求头
-     * respListener 响应结果监听接口
-     * reqService 处理请求逻辑
+     * method  请求方法必须全部大写<p>
+     * reqParams 请求参数的对象，可以为bean实体类和map对象，字段值统一用String<p>
+     * url  请求地址<p>
+     * header  请求头<p>
+     * respListener 响应结果监听接口<p>
+     * reqService 处理请求逻辑<p>
      */
     private Request(Builder builder) {
         this.rClient = builder.rClient;
@@ -121,7 +121,6 @@ public final class Request implements IRequest {
          * 单个设置请求参数
          * @param name 参数名
          * @param value 参数值
-         * @return
          */
         public Builder addParam(String name, String value) {
             if (params == null) {
@@ -151,7 +150,8 @@ public final class Request implements IRequest {
         }
 
         /**
-         * 批量设置请求头属性
+         * 批量设置请求头属性,将请求头以key-value的形式装入map，如<p>
+         *     <code>headerMap.put("Content-Type", "application/x-www-form-urlencoded");<code/>
          */
         public Builder addHeaders(HashMap<String, String> headerMap) {
             if (headerMap != null) {

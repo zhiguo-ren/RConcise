@@ -1,23 +1,23 @@
-package com.egbert.rconcise.download.interfaces;
+package com.egbert.rconcise.download.listener;
 
-import com.egbert.rconcise.download.ErrorCode;
+import com.egbert.rconcise.internal.ErrorCode;
 
 /**
- * 断点续传监听接口
+ * 下载状态回调接口
  * Created by Egbert on 3/18/2019.
  */
 public interface IDownloadObserver {
 
     /**
-     * 获取下载文件总长度
+     * 下载开始 callback
      *
      * @param downloadId 下载id
-     * @param totalLength 下载文件总的长度
+     * @param totalLength 下载文件的总长度
      */
-    void onTotalLength(int downloadId, long totalLength);
+    void onStart(int downloadId, long totalLength);
 
     /**
-     * 下载进度
+     * 下载进度 callback
      *
      * @param downloadId 下载id
      * @param downloadPercent 下载的百分比
@@ -27,23 +27,23 @@ public interface IDownloadObserver {
     void onProgress(int downloadId, int downloadPercent, String speed, long bytes);
 
     /**
-     * 下载成功
+     * 下载成功 callback
      */
     void onSuccess(int downloadId, String filePath);
 
 
     /**
-     * 暂停下载
+     * 暂停下载 callback
      */
     void onPause(int downloadId);
 
     /**
-     * 取消任务
+     * 取消任务 callback
      */
     void onCancel(ErrorCode code);
 
     /**
-     * 下载失败监听
+     * 下载出错 callback
      *
      * @param downloadId 下载id
      * @param code 错误码
@@ -52,6 +52,7 @@ public interface IDownloadObserver {
     void onError(int downloadId, ErrorCode code, String msg);
 
     /**
+     * 下载失败 callback
      * @param downloadId 下载id
      * @param code 错误码
      * @param msg 错误信息

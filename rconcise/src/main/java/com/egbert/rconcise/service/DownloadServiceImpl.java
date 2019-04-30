@@ -5,12 +5,12 @@ import android.util.Log;
 
 import com.egbert.rconcise.download.DownloadDao;
 import com.egbert.rconcise.download.DownloadItem;
-import com.egbert.rconcise.download.ErrorCode;
+import com.egbert.rconcise.internal.ErrorCode;
 import com.egbert.rconcise.download.RDownload;
 import com.egbert.rconcise.download.RDownloadManager;
-import com.egbert.rconcise.download.enums.DownloadStatus;
-import com.egbert.rconcise.download.interfaces.DownloadListenerImpl;
-import com.egbert.rconcise.download.interfaces.IDownloadListener;
+import com.egbert.rconcise.enums.TaskStatus;
+import com.egbert.rconcise.download.listener.DownloadListenerImpl;
+import com.egbert.rconcise.download.listener.IDownloadListener;
 import com.egbert.rconcise.internal.HeaderField;
 import com.egbert.rconcise.internal.ReqMethod;
 import com.egbert.rconcise.internal.Utils;
@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Created by Egbert on 3/19/2019.
  */
-public class DownloadServiceImpl implements IReqService {
+public class DownloadServiceImpl implements IReqService, IDownloadOrUploadReqService {
     private RDownload rDownload;
     private DownloadItem downloadItem;
     private DownloadDao downloadDao;
@@ -93,7 +93,7 @@ public class DownloadServiceImpl implements IReqService {
             }
             int code = connection.getResponseCode();
             if (code == HttpURLConnection.HTTP_OK || code == HttpURLConnection.HTTP_PARTIAL) {
-                downloadItem.status = DownloadStatus.starting.getValue();
+                downloadItem.status = TaskStatus.starting.getValue();
                 downloadDao.updateRecord(downloadItem);
                 String lenStr = connection.getHeaderField(HeaderField.CONTENT_LENGTH.getValue());
                 //得到返回内容的长度
@@ -111,7 +111,7 @@ public class DownloadServiceImpl implements IReqService {
                     if (file.exists()) {
                         if (file.length() == totalLen) {
                             respListener.onError(downloadItem.id, ErrorCode.EXIST, ErrorCode.EXIST.getMsg());
-                            downloadItem.status = DownloadStatus.finish.getValue();
+                            downloadItem.status = TaskStatus.finish.getValue();
                             downloadItem.currLen = totalLen;
                             downloadItem.totalLen = totalLen;
                             downloadDao.updateRecord(downloadItem);
@@ -134,9 +134,9 @@ public class DownloadServiceImpl implements IReqService {
                         }
                     }
                     downloadItem.totalLen = totalLen;
-                    downloadItem.status = DownloadStatus.downloading.getValue();
+                    downloadItem.status = TaskStatus.running.getValue();
                     downloadDao.updateRecord(downloadItem);
-                    respListener.onTotalLength(downloadItem.id, totalLen);
+                    respListener.onStart(downloadItem.id, totalLen);
 
                     bis = new BufferedInputStream(connection.getInputStream());
                     fos = new FileOutputStream(file, true);
@@ -175,7 +175,7 @@ public class DownloadServiceImpl implements IReqService {
                         if (receiveLen / (double) totalLen * 100 >= 2 || getLen == totalLen) {
                             downloadItem.currLen = getLen;
                             if (getLen == totalLen) {
-                                downloadItem.status = DownloadStatus.finish.getValue();
+                                downloadItem.status = TaskStatus.finish.getValue();
                                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.CHINA);
                                 downloadItem.endTime = dateFormat.format(new Date());
                             }
@@ -233,14 +233,14 @@ public class DownloadServiceImpl implements IReqService {
     }
 
     private void failedStatus() {
-        downloadItem.status = DownloadStatus.failed.getValue();
+        downloadItem.status = TaskStatus.failed.getValue();
         downloadDao.updateRecord(downloadItem);
     }
 
     private synchronized void pauseStatus() {
-        if (downloadItem.status != DownloadStatus.pause.getValue()) {
+        if (downloadItem.status != TaskStatus.pause.getValue()) {
             respListener.onPause(downloadItem.id, downloadItem.filePath);
-            downloadItem.status = DownloadStatus.pause.getValue();
+            downloadItem.status = TaskStatus.pause.getValue();
             downloadDao.updateRecord(downloadItem);
         }
     }
@@ -259,6 +259,7 @@ public class DownloadServiceImpl implements IReqService {
     }
 
 
+    @Override
     public void pause() {
         isPause.compareAndSet(false, true);
         pauseStatus();
@@ -268,6 +269,7 @@ public class DownloadServiceImpl implements IReqService {
         return isPause.get();
     }
 
+    @Override
     public void cancel(boolean isDelFile) {
         isCancel.compareAndSet(false, true);
         this.isDelFile = isDelFile;
@@ -278,6 +280,7 @@ public class DownloadServiceImpl implements IReqService {
         return isCancel.get();
     }
 
+    @Override
     public void resume() {
         isPause.compareAndSet(true, false);
     }

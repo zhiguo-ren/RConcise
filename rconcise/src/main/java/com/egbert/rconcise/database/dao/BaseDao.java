@@ -207,6 +207,37 @@ public abstract class BaseDao<T> implements IBaseDao<T> {
     }
 
     /**
+     * 生成数据表的id
+     * @param isOdd true生成奇数ID false 生成偶数ID
+     */
+    public Integer generateId(boolean isOdd) {
+        int maxId = isOdd ? 1 : 0;
+        // 如果使用聚合函数，则即使表中没有数据，cursor中的count也是1，默认有一条null记录，
+        String sql = "select ifnull(max(id), '-1') from " + tableName;
+        synchronized (this) {
+            Cursor cursor = null;
+            try {
+                cursor = database.rawQuery(sql, null);
+                if (cursor.moveToNext()) {
+                    int index = cursor.getColumnIndex("ifnull(max(id), '-1')");
+                    if (index != -1) {
+                        int id = cursor.getInt(index);
+                        if (id != -1) {
+                            maxId = id;
+                            maxId += 2;
+                        }
+                    }
+                }
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+        return maxId;
+    }
+
+    /**
      * 创建表
      */
     protected abstract String createTable();

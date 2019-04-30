@@ -149,13 +149,13 @@ public class HttpLoggingInterceptor implements Interceptor {
                 if (request.headers() != null) {
                     contentType = request.headers().get(HeaderField.CONTENT_TYPE.getValue());
                 }
-                String type = ContentType.FORM_URLENCODED.getContentType();
+                String type = ContentType.FORM_URLENCODED.getValue();
                 if (TextUtils.isEmpty(contentType) || type.contains(contentType)) {
                     StringBuilder builder = Utils.parseParams(reqParams, false);
                     if (builder != null && builder.length() > 0) {
                         params = builder.toString().getBytes(StandardCharsets.UTF_8);
                     }
-                } else if (ContentType.JSON.getContentType().contains(contentType)) {
+                } else if (ContentType.JSON.getValue().contains(contentType)) {
                     String json = new Gson().toJson(reqParams);
                     params = json.getBytes(StandardCharsets.UTF_8);
                 } else {

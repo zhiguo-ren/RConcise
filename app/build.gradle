@@ -27,7 +27,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation project(':rconcise')
-//    implementation 'com.egbert.rconcise:rconcise:1.0.1'
+//    implementation 'com.egbert.rconcise:rconcise:1.0.2'
     implementation 'com.orhanobut:logger:2.2.0'
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.30'
     implementation 'cn.bingoogolapple:bga-progressbar:1.0.1@aar'

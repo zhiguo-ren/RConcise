@@ -1,23 +1,24 @@
-package com.egbert.rconcise.download.enums;
+package com.egbert.rconcise.enums;
 
 /**
+ * 任务优先级枚举
  * Created by Egbert on 3/18/2019.
  */
 public enum Priority {
     /**
-     * 手动下载的优先级
+     * 底
      */
-    LOW(0),
+    LOW(1),
 
     /**
-     * 主动推送资源的手动恢复的优先级
+     * 中
      */
-    MIDDLE(1),
+    MIDDLE(2),
 
     /**
-     * 主动推送资源的优先级
+     * 高
      */
-    HIGH(2);
+    HIGH(3);
 
     Priority(int value) {
         this.value = value;

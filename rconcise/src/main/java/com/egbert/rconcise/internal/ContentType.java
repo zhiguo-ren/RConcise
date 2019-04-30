@@ -27,7 +27,7 @@ public enum ContentType {
         this.contentType = contentType;
     }
 
-    public String getContentType() {
+    public String getValue() {
         return this.contentType;
     }
 }

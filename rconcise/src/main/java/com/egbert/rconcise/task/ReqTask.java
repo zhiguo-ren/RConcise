@@ -4,27 +4,42 @@ import android.util.Log;
 
 import com.egbert.rconcise.download.DownloadItem;
 import com.egbert.rconcise.download.RDownload;
-import com.egbert.rconcise.download.task.CustomFuturetask;
-import com.egbert.rconcise.download.task.DownloadThreadPoolManager;
 import com.egbert.rconcise.internal.http.IRequest;
 import com.egbert.rconcise.internal.http.Request;
 import com.egbert.rconcise.service.DownloadServiceImpl;
+import com.egbert.rconcise.service.IDownloadOrUploadReqService;
 import com.egbert.rconcise.service.IReqService;
 import com.egbert.rconcise.service.ReqServiceImpl;
+import com.egbert.rconcise.service.UploadServiceImpl;
+import com.egbert.rconcise.upload.UploadItem;
 
 /**
  * Created by Egbert on 2/25/2019.
  */
 public class ReqTask implements Runnable {
+    public static final int GENERAL_REQ = 1;
+    public static final int DOWNLOAD_REQ = 2;
+    public static final int UPLOAD_REQ = 3;
     private int taskId;
     private IReqService reqService;
     private CustomFuturetask futureTask;
+    /**
+     *   GENERAL_REQ 1 ReqServiceImpl 处理的常规get post请求 <p>
+     *   DOWNLOAD_REQ 2 DownloadServiceImpl 处理的下载任务 <p>
+     *   UPLOAD_REQ 3 UploadServiceImpl 处理的上传任务
+     */
+    private int taskType;
 
     public ReqTask(IRequest request) {
         if (request instanceof Request) {
             this.reqService = new ReqServiceImpl();
-        } else {
+            taskType = GENERAL_REQ;
+        } else if (request instanceof RDownload){
             this.reqService = new DownloadServiceImpl();
+            taskType = DOWNLOAD_REQ;
+        } else {
+            this.reqService = new UploadServiceImpl();
+            taskType = UPLOAD_REQ;
         }
         this.reqService.setRequest(request);
     }
@@ -36,6 +51,11 @@ public class ReqTask implements Runnable {
 
     public void setRDownload(RDownload rDownload) {
         this.reqService.setRequest(rDownload);
+    }
+
+    public void setUploadItem(UploadItem item) {
+        this.taskId = item.id;
+        ((UploadServiceImpl) this.reqService).setUploadItem(item);
     }
 
     public int getTaskId() {
@@ -51,18 +71,23 @@ public class ReqTask implements Runnable {
         if (futureTask == null) {
             futureTask = new CustomFuturetask(this, null);
         }
-        ((DownloadServiceImpl) reqService).resume();
+        ((IDownloadOrUploadReqService) reqService).resume();
         try {
-            DownloadThreadPoolManager.getInst().execute(futureTask);
+            if (taskType == DOWNLOAD_REQ) {
+                DownloadAndUploadThreadPoolManager.getInst().executeDownload(futureTask);
+            } else if (taskType == UPLOAD_REQ){
+                DownloadAndUploadThreadPoolManager.getInst().executeUpload(futureTask);
+            }
         } catch (InterruptedException e) {
             Log.e(ReqTask.class.getSimpleName(), Log.getStackTraceString(e));
+            e.printStackTrace();
         }
     }
 
     public void pause() {
-        ((DownloadServiceImpl) reqService).pause();
+        ((IDownloadOrUploadReqService) reqService).pause();
         if (futureTask != null) {
-            DownloadThreadPoolManager.getInst().remove(futureTask);
+            DownloadAndUploadThreadPoolManager.getInst().remove(futureTask, taskType);
             futureTask = null;
         }
     }
@@ -71,15 +96,15 @@ public class ReqTask implements Runnable {
      * @param isDelFile  是否删除文件  true 删除 false 不删除
      */
     public void cancel(boolean isDelFile) {
-        ((DownloadServiceImpl) reqService).cancel(isDelFile);
+        ((IDownloadOrUploadReqService) reqService).cancel(isDelFile);
         if (futureTask != null) {
-            DownloadThreadPoolManager.getInst().remove(futureTask);
+            DownloadAndUploadThreadPoolManager.getInst().remove(futureTask, taskType);
             futureTask = null;
         }
     }
 
     public boolean isStart() {
-        return futureTask != null || DownloadThreadPoolManager.getInst().isExisted(futureTask);
+        return futureTask != null || DownloadAndUploadThreadPoolManager.getInst().isExisted(futureTask, taskType);
     }
 
 }

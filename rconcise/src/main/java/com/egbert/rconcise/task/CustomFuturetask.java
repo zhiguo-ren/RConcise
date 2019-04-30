@@ -1,6 +1,4 @@
-package com.egbert.rconcise.download.task;
-
-import com.egbert.rconcise.task.ReqTask;
+package com.egbert.rconcise.task;
 
 import java.util.concurrent.FutureTask;
 

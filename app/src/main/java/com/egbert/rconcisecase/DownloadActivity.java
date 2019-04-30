@@ -9,10 +9,10 @@ import android.view.View;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
-import com.egbert.rconcise.download.ErrorCode;
 import com.egbert.rconcise.download.RDownload;
 import com.egbert.rconcise.download.RDownloadManager;
-import com.egbert.rconcise.download.interfaces.IDownloadObserver;
+import com.egbert.rconcise.download.listener.IDownloadObserver;
+import com.egbert.rconcise.internal.ErrorCode;
 import com.egbert.rconcisecase.model.Download;
 
 import java.text.DecimalFormat;
@@ -75,62 +75,61 @@ public class DownloadActivity extends AppCompatActivity {
 
         @Override
         protected void convert(final BaseViewHolder helper, final Download item) {
-            final BaseViewHolder holder = helper;
             if (item.downloadItem == null) {
                 item.observer = new IDownloadObserver() {
                     @Override
                     public void onPause(int downloadId) {
-                        holder.setText(R.id.speed_tv, "暂停下载");
+                        helper.setText(R.id.speed_tv, "暂停下载");
                     }
 
                     @Override
                     public void onCancel(ErrorCode code) {
-                        holder.setText(R.id.speed_tv, code.getMsg());
-                        holder.setText(R.id.curr_and_total_tv, "");
+                        helper.setText(R.id.speed_tv, code.getMsg());
+                        helper.setText(R.id.curr_and_total_tv, "");
                         helper.setImageResource(R.id.action_btn, android.R.drawable.ic_media_play);
-                        holder.setVisible(R.id.action_btn, true);
-                        BGAProgressBar progressBar = holder.getView(R.id.pb);
+                        helper.setVisible(R.id.action_btn, true);
+                        BGAProgressBar progressBar = helper.getView(R.id.pb);
                         progressBar.setProgress(0);
                     }
 
                     @Override
-                    public void onTotalLength(int downloadId, long totalLength) {
-                        holder.setText(R.id.file_name_tv, item.downloadItem.fileName);
+                    public void onStart(int downloadId, long totalLength) {
+                        helper.setText(R.id.file_name_tv, item.downloadItem.fileName);
                         item.total = format.format( totalLength / 1024d / 1024) + "MB";
                         long curr = item.downloadItem.currLen;
-                        holder.setText(R.id.curr_and_total_tv, curr + "MB/" + item.total);
+                        helper.setText(R.id.curr_and_total_tv, format.format(curr / 1024d / 1024) + "MB/" + item.total);
                     }
 
                     @Override
                     public void onProgress(int downloadId, final int downloadPercent, String speed, long bytes) {
-                        holder.setText(R.id.curr_and_total_tv, format.format(bytes / 1024d / 1024) + "MB/"
+                        helper.setText(R.id.curr_and_total_tv, format.format(bytes / 1024d / 1024) + "MB/"
                                 + item.total);
-                        holder.setText(R.id.speed_tv, speed);
-                        BGAProgressBar progressBar = holder.getView(R.id.pb);
+                        helper.setText(R.id.speed_tv, speed);
+                        BGAProgressBar progressBar = helper.getView(R.id.pb);
                         progressBar.setProgress(downloadPercent);
                     }
 
                     @Override
                     public void onSuccess(int downloadId, String filePath) {
-                        holder.setText(R.id.speed_tv, "下载完成");
-                        holder.setVisible(R.id.action_btn, false);
+                        helper.setText(R.id.speed_tv, "下载完成");
+                        helper.setVisible(R.id.action_btn, false);
                     }
 
                     @Override
                     public void onError(int downloadId, ErrorCode code, String msg) {
-                        holder.setText(R.id.speed_tv, msg);
+                        helper.setText(R.id.speed_tv, msg);
                         item.isStart = false;
                     }
 
                     @Override
                     public void onFailure(int downloadId, ErrorCode code, int httpCode, String msg) {
-                        holder.setText(R.id.speed_tv, msg);
-                        holder.setImageResource(R.id.action_btn, android.R.drawable.ic_media_play);
+                        helper.setText(R.id.speed_tv, msg);
+                        helper.setImageResource(R.id.action_btn, android.R.drawable.ic_media_play);
                     }
                 };
             }
 
-            holder.getView(R.id.action_btn).setOnClickListener(new View.OnClickListener() {
+            helper.getView(R.id.action_btn).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (!item.isStart) {
@@ -142,11 +141,11 @@ public class DownloadActivity extends AppCompatActivity {
                         item.isStart = false;
                         item.downloadItem.reqTask.pause();
                     }
-                    holder.setImageResource(R.id.action_btn, item.isStart
+                    helper.setImageResource(R.id.action_btn, item.isStart
                             ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
                 }
             });
-            holder.getView(R.id.del_btn).setOnClickListener(new View.OnClickListener() {
+            helper.getView(R.id.del_btn).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (!item.isCancel) {

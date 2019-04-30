@@ -1,10 +1,8 @@
 package com.egbert.rconcise.download;
 
-import android.database.Cursor;
-
 import com.egbert.rconcise.database.dao.BaseDao;
-import com.egbert.rconcise.download.enums.DownloadStatus;
-import com.egbert.rconcise.download.enums.Priority;
+import com.egbert.rconcise.enums.Priority;
+import com.egbert.rconcise.enums.TaskStatus;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -15,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
+ * 下载任务记录的数据库操作类<br><br>
  * Created by Egbert on 3/15/2019.
  */
 public class DownloadDao extends BaseDao<DownloadItem> {
@@ -34,36 +33,10 @@ public class DownloadDao extends BaseDao<DownloadItem> {
                 + "unique(file_path)" + ")";
     }
 
-
-    /**
-     * 生成id
-     */
-    public Integer generateId() {
-        int maxId = 0;
-        String sql = "select max(id) from " + tableName;
-        synchronized (this) {
-            Cursor cursor = null;
-            try {
-                cursor = database.rawQuery(sql, null);
-                if (cursor.moveToNext()) {
-                    int index = cursor.getColumnIndex("max(id)");
-                    if (index != -1) {
-                        maxId = cursor.getInt(index);
-                    }
-                }
-            } finally {
-                if (cursor != null) {
-                    cursor.close();
-                }
-            }
-        }
-        return maxId + 1;
-    }
-
     /**
      * 根据下载地址和下载文件路径查找下载记录
      */
-    public DownloadItem findRecord(String url, String filePath) {
+    /*public DownloadItem findRecord(String url, String filePath) {
         synchronized (DownloadDao.class) {
             for (DownloadItem item : sDownloadList) {
                 if (item.url.equals(url) && item.filePath.equals(filePath)) {
@@ -79,15 +52,14 @@ public class DownloadDao extends BaseDao<DownloadItem> {
             }
             return null;
         }
-    }
+    }*/
 
     /**
-     * 根据下载文件路径查找下载记录
+     * 查找全部下载记录
      */
-    public List<DownloadItem> findRecords(String filePath) {
+    public List<DownloadItem> selectAllRecord() {
         synchronized (DownloadDao.class) {
             DownloadItem where = new DownloadItem();
-            where.filePath = filePath;
             return query(where);
         }
     }
@@ -105,10 +77,10 @@ public class DownloadDao extends BaseDao<DownloadItem> {
             DownloadItem where = new DownloadItem();
             where.filePath = filePath;
             List<DownloadItem> results = query(where);
-            if (!results.isEmpty()) {
-                return results.get(0);
+            if (results == null || results.isEmpty()) {
+                return null;
             }
-            return null;
+            return results.get(0);
         }
     }
 
@@ -125,7 +97,7 @@ public class DownloadDao extends BaseDao<DownloadItem> {
             DownloadItem where = new DownloadItem();
             where.id = recordId;
             List<DownloadItem> result = query(where);
-            if (result.isEmpty()) {
+            if (result == null || result.isEmpty()) {
                 return null;
             }
             return result.get(0);
@@ -147,9 +119,9 @@ public class DownloadDao extends BaseDao<DownloadItem> {
     }
 
     /**
-     * 根据id从内存中移除下载记录
+     * 根据id从缓存中移除下载记录
      */
-    public boolean delRecordFromMemory(int id) {
+    public boolean delRecordFromCached(int id) {
         synchronized (DownloadItem.class) {
             for (int i = 0; i < sDownloadList.size(); i++) {
                 if (sDownloadList.get(i).id == id) {
@@ -163,7 +135,7 @@ public class DownloadDao extends BaseDao<DownloadItem> {
 
     public int delRecord(int id) {
         synchronized (DownloadItem.class) {
-            delRecordFromMemory(id);
+            delRecordFromCached(id);
             DownloadItem where = new DownloadItem();
             where.id = id;
             return delete(where);
@@ -174,14 +146,17 @@ public class DownloadDao extends BaseDao<DownloadItem> {
         synchronized (DownloadDao.class) {
             DownloadItem existed = findRecord(item.filePath);
             if (existed == null) {
-                item.id = generateId();
+                item.id = generateId(true);
                 item.priority = Priority.HIGH.getValue();
                 item.currLen = 0L;
                 item.totalLen = 0L;
-                item.status = DownloadStatus.waiting.getValue();
+                item.status = TaskStatus.waiting.getValue();
                 item.startTime = sFormat.format(new Date());
                 item.endTime = "0";
-                insert(item);
+                long effect = insert(item);
+                if (effect == -1) {
+                    return -1;
+                }
                 sDownloadList.add(item);
                 return item.id;
             }
@@ -199,7 +174,7 @@ public class DownloadDao extends BaseDao<DownloadItem> {
         synchronized (DownloadDao.class) {
             result = update(item, where);
             if (result > 0) {
-                if (item.status == DownloadStatus.finish.getValue()) {
+                if (item.status == TaskStatus.finish.getValue()) {
                     for (DownloadItem downloadItem : sDownloadList) {
                         if (downloadItem.id.intValue() == item.id) {
                             sDownloadList.remove(downloadItem);

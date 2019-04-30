@@ -3,7 +3,7 @@ package com.egbert.rconcise.download;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.egbert.rconcise.download.interfaces.IDownloadObserver;
+import com.egbert.rconcise.download.listener.IDownloadObserver;
 import com.egbert.rconcise.internal.ReqMethod;
 import com.egbert.rconcise.internal.http.IRequest;
 
@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 /**
+ * 发起下载请求任务，配置下载请求的参数及回调监听<br><br>
  * Created by Egbert on 3/19/2019.
  */
 public final class RDownload implements IRequest {
@@ -24,6 +25,7 @@ public final class RDownload implements IRequest {
      * 请求头
      */
     private final HashMap<String, String> headers;
+
     /**
      * post 请求参数map
      */
@@ -130,7 +132,8 @@ public final class RDownload implements IRequest {
         }
 
         /**
-         * 单个添加请求头
+         * 单个添加请求头 如：<br>
+         *     <code>headerMap.put("Content-Type", "application/x-www-form-urlencoded");<code/>
          */
         public Builder addHeader(String name, String value) {
             if (headers == null) {
@@ -144,10 +147,12 @@ public final class RDownload implements IRequest {
          * 批量添加请求头
          */
         public Builder addHeaders(HashMap<String, String> headers) {
-            if (this.headers == null) {
-                this.headers = headers;
-            } else {
-                this.headers.putAll(headers);
+            if (headers != null) {
+                if (this.headers == null) {
+                    this.headers = headers;
+                } else {
+                    this.headers.putAll(headers);
+                }
             }
             return this;
         }
@@ -161,7 +166,7 @@ public final class RDownload implements IRequest {
         }
 
         /**
-         *  请求方法
+         *  请求方法,下载只支持GET和POST
          */
         public Builder method(String method) {
             this.method = method;
@@ -170,7 +175,7 @@ public final class RDownload implements IRequest {
 
         /**
          * 添加文件下载的目标文件目录（下载到哪）,根目录之下的目录路径（不包含sd卡根目录，由框架统一获取系统外置存储根目录），
-         * 如：rdownload/imgs/    如果要存到sd卡根目录，只使用 / 即可
+         * 如：rdownload/imgs/   如果要存到sd卡根目录，只使用 "/" 即可
          *  不设置为默认目录
          */
         public Builder directory(String directory) {
@@ -194,8 +199,8 @@ public final class RDownload implements IRequest {
         }
 
         /**
-         * 发送下载请求
-         * @return 返回用于标识下载记录的唯一id, 为-1则添加下载请求失败
+         * 添加下载请求任务到线程池
+         * @return 返回用于标识下载记录的唯一Id, 为-1则添加下载请求任务失败
          */
         public int download() {
             try {

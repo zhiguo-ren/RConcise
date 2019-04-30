@@ -15,6 +15,20 @@
         android:gravity="center"
         android:background="@android:color/background_light" />
 
+    <Button
+        android:id="@+id/add_file"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:paddingStart="30dp"
+        android:paddingEnd="30dp"
+        android:text="点击添加上传文件"
+        android:textSize="18sp"
+        android:textColor="@android:color/white"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/selector_add_file" />
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/download_rv"
         android:layout_width="match_parent"

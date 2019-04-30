@@ -1,13 +1,13 @@
-package com.egbert.rconcise.download;
+package com.egbert.rconcise.internal;
 
 /**
- * 状态码常量类
+ * 错误码枚举
  * Created by Egbert on 3/19/2019.
  */
 public enum ErrorCode {
 
     /**
-     * 已下载
+     * 下载上传的错误码
      */
     EXIST               (1, "文件已下载"),
     RESP_ERROR          (2, "http响应码非200/206"),
@@ -17,7 +17,8 @@ public enum ErrorCode {
     CREATE_FILE_FAILED  (6, "创建文件失败"),
     CREATE_DIR_FAILED   (7, "创建文件目录失败"),
     INSER_DB_FAILED     (8, "插入数据库失败，请确认文件路径是否重复或下载任务是否重复添加"),
-    CANCEL              (9, "下载任务已取消");
+    CANCEL              (9, "任务已取消"),
+    FILE_NOT_EXIST      (10, "文件不存在");
 
     private int code;
     private String msg;

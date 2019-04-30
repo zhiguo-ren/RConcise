@@ -1,43 +1,44 @@
-package com.egbert.rconcise.download.enums;
+package com.egbert.rconcise.enums;
 
 /**
+ * 下载/上传任务的状态码<br><br>
  * Created by Egbert on 3/18/2019.
  */
-public enum DownloadStatus {
+public enum TaskStatus {
 
     /**
-     * 等待下载
+     * 等待下载/上传
      */
-    waiting(0),
+    waiting(1),
 
     /**
-     * 开始下载
+     * 开始下载/上传
      */
-    starting(1),
+    starting(2),
 
     /**
-     * 下载中
+     * 正在下载/上传
      */
-    downloading(2),
+    running(3),
 
     /**
      * 暂停
      */
-    pause(3),
+    pause(4),
 
     /**
      * 完成
      */
-    finish(4),
+    finish(5),
 
     /**
      * 失败
      */
-    failed(5);
+    failed(6);
 
     private int value;
 
-    DownloadStatus(int value) {
+    TaskStatus(int value) {
         this.value = value;
     }
 

@@ -1,100 +1,100 @@
-package com.egbert.rconcise.download.interfaces;
+package com.egbert.rconcise.upload.listener;
 
 import android.os.Handler;
 import android.os.Looper;
 
-import com.egbert.rconcise.download.ErrorCode;
+import com.egbert.rconcise.internal.ErrorCode;
 
 /**
- * Created by Egbert on 3/25/2019.
+ * Created by Egbert on 4/25/2019.
  */
-public class DownloadListenerImpl implements IDownloadListener {
-    private IDownloadObserver observer;
+public class UploadListenerImpl implements IUploadListener {
+    private IUploadObserver observer;
     private Handler handler = new Handler(Looper.getMainLooper());
 
-    public DownloadListenerImpl(IDownloadObserver observer) {
+    public UploadListenerImpl(IUploadObserver observer) {
         this.observer = observer;
     }
 
     @Override
-    public void onSuccess(final int downloadId, final String filePath) {
+    public void onStart(final int uploadId, final long totalLen) {
         if (observer != null) {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    observer.onSuccess(downloadId, filePath);
+                    observer.onStart(uploadId, totalLen);
                 }
             });
         }
     }
 
     @Override
-    public void onCancel(final int downloadId) {
+    public void onProgress(final int uploadId, final int uploadPercent, final String speed, final long bytes) {
         if (observer != null) {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    observer.onCancel(ErrorCode.CANCEL);
+                    observer.onProgress(uploadId, uploadPercent, speed, bytes);
                 }
             });
         }
     }
 
     @Override
-    public void onPause(final int downloadId, String filePath) {
+    public void onSuccess(final int uploadId) {
         if (observer != null) {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    observer.onPause(downloadId);
+                    observer.onSuccess(uploadId);
                 }
             });
         }
     }
 
     @Override
-    public void onError(final int downloadId, final ErrorCode code, final String msg) {
+    public void onPause(final int uploadId) {
         if (observer != null) {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    observer.onError(downloadId, code, msg);
+                    observer.onPause(uploadId);
                 }
             });
         }
     }
 
     @Override
-    public void onFailure(final int downloadId, final ErrorCode code, final int httpCode, final String msg) {
+    public void onCancel(final ErrorCode code) {
         if (observer != null) {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    observer.onFailure(downloadId, code, httpCode, msg);
+                    observer.onCancel(code);
                 }
             });
         }
     }
 
     @Override
-    public void onProgress(final int downloadId, final int percent, final String speed, final long bytes) {
+    public void onError(final int uploadId, final ErrorCode code, final String msg) {
         if (observer != null) {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    observer.onProgress(downloadId, percent, speed, bytes);
+                    observer.onError(uploadId, code, msg);
                 }
             });
         }
     }
 
     @Override
-    public void onTotalLength(final int downloadId, final long length) {
+    public void onFailure(final int uploadId, final ErrorCode code, final int httpCode, final String msg) {
         if (observer != null) {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    observer.onTotalLength(downloadId, length);
+                    observer.onFailure(uploadId, code, httpCode, msg);
                 }
             });
         }

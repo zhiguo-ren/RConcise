@@ -45,7 +45,7 @@ public class CallNetServiceInterceptor implements Interceptor {
                 connection.setDoOutput(true);
             }
             //默认Content-Type值为application/x-www-form-urlencoded
-            connection.setRequestProperty(CONTENT_TYPE, ContentType.FORM_URLENCODED.getContentType());
+            connection.setRequestProperty(CONTENT_TYPE, ContentType.FORM_URLENCODED.getValue());
             HashMap<String, String> headers = request.headers();
             if (headers != null && headers.size() != 0) {
                 for (Map.Entry<String, String> entry : headers.entrySet()) {

@@ -12,7 +12,7 @@ import java.util.Map;
  * Created by Egbert on 3/11/2019.
  */
 public class RDaoFactory {
-
+    public static final String DB_NAME = "RConcise.db";
     /**
      * 存放数据库的相对路径和对应的数据库操作类SQLiteDatabase实例
      */
