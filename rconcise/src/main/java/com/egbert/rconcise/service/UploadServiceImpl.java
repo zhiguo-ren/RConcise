@@ -4,7 +4,6 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.egbert.rconcise.enums.TaskStatus;
-import com.egbert.rconcise.internal.Const;
 import com.egbert.rconcise.internal.ContentType;
 import com.egbert.rconcise.internal.ErrorCode;
 import com.egbert.rconcise.internal.HeaderField;
@@ -32,6 +31,11 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.egbert.rconcise.internal.Const.BOUNDARY;
+import static com.egbert.rconcise.internal.Const.BOUNDARY_PREFIX;
+import static com.egbert.rconcise.internal.Const.CRLF;
+import static com.egbert.rconcise.internal.Const.UTF8;
 
 /**
  * Created by Egbert on 3/19/2019.
@@ -71,14 +75,14 @@ public class UploadServiceImpl implements IReqService, IDownloadOrUploadReqServi
                 totalLen += middle;
             }
             MultiPartBody.Part part = parts.get(i);
-            long header = part.getPartHeaders().getBytes(Const.UTF8).length;
+            long header = part.getPartHeaders().getBytes(UTF8).length;
             currTotalLen += header;
             totalLen += header;
             if (part.isFile()) {
                 totalLen += ((File) part.getContent()).length();
                 currTotalLen += ((File) part.getContent()).length() - part.getBeginIndex();
             } else {
-                long content = ((String) part.getContent()).getBytes(Const.UTF8).length;
+                long content = ((String) part.getContent()).getBytes(UTF8).length;
                 currTotalLen += content;
                 totalLen += content;
             }
@@ -100,9 +104,9 @@ public class UploadServiceImpl implements IReqService, IDownloadOrUploadReqServi
             connection.setConnectTimeout(20000);
             connection.setDoOutput(true);
 
-            byte[] startBoundary = (Const.BOUNDARY + Const.CRLF).getBytes(Const.UTF8);
-            byte[] middleBoundary = (Const.CRLF + Const.BOUNDARY + Const.CRLF).getBytes(Const.UTF8);
-            byte[] endLine = (Const.CRLF + Const.BOUNDARY + "--" + Const.CRLF).getBytes(Const.UTF8);
+            byte[] startBoundary = (BOUNDARY_PREFIX + BOUNDARY + CRLF).getBytes(UTF8);
+            byte[] middleBoundary = (CRLF + BOUNDARY_PREFIX + BOUNDARY + CRLF).getBytes(UTF8);
+            byte[] endLine = (CRLF + BOUNDARY_PREFIX + BOUNDARY + BOUNDARY_PREFIX + CRLF).getBytes(UTF8);
             ArrayList<MultiPartBody.Part> parts = rUpload.multiPartBody().getBodyParts();
             long[] totalLen = calcContentLength(startBoundary.length, middleBoundary.length,
                     endLine.length, parts);
@@ -112,10 +116,9 @@ public class UploadServiceImpl implements IReqService, IDownloadOrUploadReqServi
             } else {
                 headers.putAll(RUploadManager.getsHeaders());
             }
-            headers.put(HeaderField.CONNECTION.getValue(), "keep-alive");
+            headers.put(HeaderField.CONNECTION.getValue(), "Keep-Alive");
             headers.put(HeaderField.CONTENT_TYPE.getValue(), ContentType.MULTIPART.getValue()
-                    + " boundary=" + Const.BOUNDARY);
-            headers.put(HeaderField.CONTENT_LENGTH.getValue(), String.valueOf(totalLen[0]));
+                    + " boundary=" + BOUNDARY);
             for (Map.Entry<String, String> entry : headers.entrySet()) {
                 if (!TextUtils.isEmpty(entry.getValue())) {
                     connection.setRequestProperty(entry.getKey(), entry.getValue());
@@ -165,7 +168,10 @@ public class UploadServiceImpl implements IReqService, IDownloadOrUploadReqServi
                     respListener.onProgress(uploadItem.id, (int) (uploadLen / (double) totalLen[1] * 100),
                             "0 K/s", uploadLen);
                 }
-                writer.write(part.getPartHeaders().getBytes(Const.UTF8));
+                byte[] partHeader = part.getPartHeaders().getBytes(UTF8);
+                writer.write(partHeader);
+                writeLen += partHeader.length;
+                uploadLen += partHeader.length;
                 if (part.isFile()) {
                     File file = ((File) part.getContent());
                     if (!file.exists()) {
@@ -205,22 +211,26 @@ public class UploadServiceImpl implements IReqService, IDownloadOrUploadReqServi
                     }
                     fis.close();
                 } else {
-                    long content = ((String) part.getContent()).getBytes(Const.UTF8).length;
-                    writer.write(((String) part.getContent()).getBytes(Const.UTF8));
+                    long content = ((String) part.getContent()).getBytes(UTF8).length;
+                    writer.write(((String) part.getContent()).getBytes(UTF8));
                     uploadLen += content;
                     writeLen += content;
                 }
             }
             writer.write(endLine);
             uploadLen += endLine.length;
-            if (writeLen / (double) totalLen[1] * 100 >= 2 || uploadLen == totalLen[1]) {
+            /*if (writeLen / (double) totalLen[1] * 100 >= 2 || uploadLen == totalLen[1]) {
                 progress(writeLen, totalLen[1], uploadLen, startTime);
-            }
+            }*/
             writer.close();
 
             // 响应码
             int code = connection.getResponseCode();
             if (code == HttpURLConnection.HTTP_OK) {
+                if (uploadLen == totalLen[1] ) {
+                    respListener.onProgress(uploadItem.id, (int) (uploadLen / (double) totalLen[1] * 100),
+                            "0 K/s", uploadLen);
+                }
                 uploadItem.currLen = totalLen[1];
                 uploadItem.status = TaskStatus.finish.getValue();
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.CHINA);

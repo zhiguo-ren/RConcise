@@ -12,10 +12,11 @@ public final class Const {
     public static final String CHARTSET_LABEL = "charset";
     public static final String FORM_DATA = "form-data;";
     public static final String CRLF = "\r\n";
-    public static final String BOUNDARY = "----" + UUID.randomUUID().toString().replaceAll("-", "");
+    public static final String BOUNDARY = UUID.randomUUID().toString();
     public static final String HTTP = "http://";
     public static final String HTTPS = "https://";
     public static final String HTTP_SEPARATOR = "/";
+    public static final String BOUNDARY_PREFIX = "--";
 
     public static final int CALL_BACK_SUCCESS = 1;
     public static final int CALL_BACK_ERROR = 2;

@@ -74,9 +74,9 @@ public class ReqTask implements Runnable {
         ((IDownloadOrUploadReqService) reqService).resume();
         try {
             if (taskType == DOWNLOAD_REQ) {
-                DownloadAndUploadThreadPoolManager.getInst().executeDownload(futureTask);
+                DownloadUploadThreadPoolManager.getInst().executeDownload(futureTask);
             } else if (taskType == UPLOAD_REQ){
-                DownloadAndUploadThreadPoolManager.getInst().executeUpload(futureTask);
+                DownloadUploadThreadPoolManager.getInst().executeUpload(futureTask);
             }
         } catch (InterruptedException e) {
             Log.e(ReqTask.class.getSimpleName(), Log.getStackTraceString(e));
@@ -87,7 +87,7 @@ public class ReqTask implements Runnable {
     public void pause() {
         ((IDownloadOrUploadReqService) reqService).pause();
         if (futureTask != null) {
-            DownloadAndUploadThreadPoolManager.getInst().remove(futureTask, taskType);
+            DownloadUploadThreadPoolManager.getInst().remove(futureTask, taskType);
             futureTask = null;
         }
     }
@@ -98,13 +98,13 @@ public class ReqTask implements Runnable {
     public void cancel(boolean isDelFile) {
         ((IDownloadOrUploadReqService) reqService).cancel(isDelFile);
         if (futureTask != null) {
-            DownloadAndUploadThreadPoolManager.getInst().remove(futureTask, taskType);
+            DownloadUploadThreadPoolManager.getInst().remove(futureTask, taskType);
             futureTask = null;
         }
     }
 
     public boolean isStart() {
-        return futureTask != null || DownloadAndUploadThreadPoolManager.getInst().isExisted(futureTask, taskType);
+        return futureTask != null || DownloadUploadThreadPoolManager.getInst().isExisted(futureTask, taskType);
     }
 
 }

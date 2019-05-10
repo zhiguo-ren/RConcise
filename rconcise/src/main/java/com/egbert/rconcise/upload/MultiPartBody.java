@@ -1,6 +1,7 @@
 package com.egbert.rconcise.upload;
 
 import android.text.TextUtils;
+import android.webkit.MimeTypeMap;
 
 import com.egbert.rconcise.internal.Const;
 import com.egbert.rconcise.internal.ContentType;
@@ -80,6 +81,8 @@ public class MultiPartBody {
         private Object content;
         private String name;
         private String filename;
+        // 文件扩展名
+        private String extension;
         /**
          * 上传内容的MIME类型 如 text/plain，image/jpeg 等MIME类型
          */
@@ -127,8 +130,14 @@ public class MultiPartBody {
             }
             this.content = content;
             this.isFile = content instanceof File;
-            if (isFile && TextUtils.isEmpty(filename)) {
-                filename = ((File) content).getName();
+            if (isFile) {
+                if (TextUtils.isEmpty(filename)) {
+                    filename = ((File) content).getName();
+                }
+                extension = MimeTypeMap.getFileExtensionFromUrl(filename);
+                if (TextUtils.isEmpty(extension)) {
+                    throw new IllegalArgumentException("The extension is null, the filename is illegal.");
+                }
             }
             return this;
         }
@@ -182,17 +191,22 @@ public class MultiPartBody {
                 if (!isFile) {
                     partHeaders.append(ContentType.PLAIN.getValue());
                 } else {
-                    partHeaders.delete(partHeaders.indexOf(HeaderField.CONTENT_TYPE.getValue()) - 2, partHeaders.length());
+                    //使用系统API，获取MimeTypeMap的单例实例，然后调用其内部方法获取文件后缀名（扩展名）所对应的MIME类型
+                    String type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
+                    if (!TextUtils.isEmpty(type)) {
+                        partHeaders.append(type);
+                    } else {
+                        partHeaders.delete(partHeaders.indexOf(HeaderField.CONTENT_TYPE.getValue()) - 2,
+                                partHeaders.length());
+                    }
                 }
             }
             partHeaders.append(CRLF);
             partHeaders.append(CRLF);
 
             //转换content 不是String和File类型，都转成json字符串输出
-            if (!(content instanceof File)) {
-                if (!(content instanceof String)) {
-                    content = new Gson().toJson(content);
-                }
+            if (!(content instanceof File) && !(content instanceof String)) {
+                content = new Gson().toJson(content);
             }
             return this;
         }

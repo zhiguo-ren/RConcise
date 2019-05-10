@@ -13,8 +13,8 @@ import static com.egbert.rconcise.task.ReqTask.UPLOAD_REQ;
  * Created by Egbert on 3/20/2019.
  * 下载/上传任务线程池管理器
  */
-public final class DownloadAndUploadThreadPoolManager {
-    private static volatile DownloadAndUploadThreadPoolManager sManager;
+public final class DownloadUploadThreadPoolManager {
+    private static volatile DownloadUploadThreadPoolManager sManager;
 
     private LinkedBlockingDeque<CustomFuturetask> downloadDeque;
     private LinkedBlockingDeque<CustomFuturetask> uploadDeque;
@@ -56,19 +56,12 @@ public final class DownloadAndUploadThreadPoolManager {
     private Runnable runnableDownload = new Runnable() {
         @Override
         public void run() {
-            while (true) {
-                CustomFuturetask futureTask = null;
+            while (isLaunchDownload.get()) {
                 try {
-                    if (isLaunchDownload.get()) {
-                        futureTask = downloadDeque.take();
-                    } else {
-                        return;
-                    }
+                    downloadExecutor.execute(downloadDeque.take());
                 } catch (InterruptedException e) {
+                    ((CustomThreadFactory) downloadExecutor.getThreadFactory()).resetThreadNum();
                     e.printStackTrace();
-                }
-                if (futureTask != null) {
-                    downloadExecutor.execute(futureTask);
                 }
             }
         }
@@ -77,28 +70,22 @@ public final class DownloadAndUploadThreadPoolManager {
     private Runnable runnableUpload = new Runnable() {
         @Override
         public void run() {
-            while (true) {
-                CustomFuturetask futureTask = null;
+            while (isLaunchUpload.get()) {
                 try {
-                    if (isLaunchUpload.get()) {
-                        futureTask = uploadDeque.take();
-                    } else {
-                        return;
-                    }
+                    uploadExecutor.execute(uploadDeque.take());
                 } catch (InterruptedException e) {
+                    ((CustomThreadFactory) uploadExecutor.getThreadFactory()).resetThreadNum();
                     e.printStackTrace();
-                }
-                if (futureTask != null) {
-                    uploadExecutor.execute(futureTask);
                 }
             }
         }
     };
 
-    private DownloadAndUploadThreadPoolManager() {
+    private DownloadUploadThreadPoolManager() {
         downloadDeque = new LinkedBlockingDeque<>();
         downloadExecutor = new ThreadPoolExecutor(5, 5, 10,
-                TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(2), handlerDownload);
+                TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(2),
+                new CustomThreadFactory("download"), handlerDownload);
         downloadExecutor.allowCoreThreadTimeOut(true);
         isLaunchDownload.compareAndSet(false, true);
         downloadExecutor.execute(runnableDownload);
@@ -108,18 +95,19 @@ public final class DownloadAndUploadThreadPoolManager {
         if (isAloneUpload && isInitAloneUpload.compareAndSet(false, true)) {
             uploadDeque = new LinkedBlockingDeque<>();
             uploadExecutor = new ThreadPoolExecutor(5, 5, 10,
-                    TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(2), handlerUpload);
+                    TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(2),
+                    new CustomThreadFactory("upload"), handlerUpload);
             uploadExecutor.allowCoreThreadTimeOut(true);
             isLaunchUpload.compareAndSet(false, true);
             uploadExecutor.execute(runnableUpload);
         }
     }
 
-    public static DownloadAndUploadThreadPoolManager getInst() {
+    public static DownloadUploadThreadPoolManager getInst() {
         if (sManager == null) {
-            synchronized (DownloadAndUploadThreadPoolManager.class) {
+            synchronized (DownloadUploadThreadPoolManager.class) {
                 if (sManager == null) {
-                    sManager = new DownloadAndUploadThreadPoolManager();
+                    sManager = new DownloadUploadThreadPoolManager();
                 }
             }
         }
@@ -130,30 +118,44 @@ public final class DownloadAndUploadThreadPoolManager {
      * 重新启动线程池，开始阻塞式从队列中取任务执行，如不需要再执行任务，可调用<code>terminateDownload()<code/>方法；
      */
     public void launchDownload() {
-        isLaunchDownload.compareAndSet(false, true);
-        downloadExecutor.execute(runnableDownload);
+        if (isLaunchDownload.compareAndSet(false, true)) {
+            downloadExecutor.execute(runnableDownload);
+        }
     }
 
     /**
      * 终止线程池工作，不在从队列取任务执行，停止工作，如需再次开启，可调用<code>launchDownload()<code/>方法；
      */
     public void terminateDownload() {
-        isLaunchDownload.compareAndSet(true, false);
+        if (isLaunchDownload.compareAndSet(true, false)) {
+            Thread thread = CustomThreadFactory.ROOT_RUNNABLES.get(CustomThreadFactory.DOWNLOAD);
+            downloadDeque.clear();
+            if (thread != null) {
+                thread.interrupt();
+            }
+        }
     }
 
     /**
      * 重新启动上传线程池，开始阻塞式从队列中取任务执行，如不需要再执行任务，可调用<code>terminateUpload()<code/>方法；
      */
     public void launchUpload() {
-        isLaunchUpload.compareAndSet(false, true);
-        uploadExecutor.execute(runnableUpload);
+        if (isLaunchUpload.compareAndSet(false, true)) {
+            uploadExecutor.execute(runnableUpload);
+        }
     }
 
     /**
      * 终止上传线程池工作，不在从队列取任务执行，停止工作，如需再次开启，可调用<code>launchUpload()<code/>方法；
      */
     public void terminateUpload() {
-        isLaunchUpload.compareAndSet(true, false);
+        if (isLaunchUpload.compareAndSet(true, false)) {
+            Thread thread = CustomThreadFactory.ROOT_RUNNABLES.get(CustomThreadFactory.UPLOAD);
+            uploadDeque.clear();
+            if (thread != null) {
+                thread.interrupt();
+            }
+        }
     }
 
     /**
@@ -161,12 +163,14 @@ public final class DownloadAndUploadThreadPoolManager {
      * @param task 下载任务
      */
     public synchronized void executeDownload(CustomFuturetask task) throws InterruptedException {
-        for (CustomFuturetask futuretask : downloadDeque) {
-            if (futuretask.getTaskId() == task.getTaskId()) {
-                return;
+        if (isLaunchDownload.get()) {
+            for (CustomFuturetask futuretask : downloadDeque) {
+                if (futuretask.getTaskId() == task.getTaskId()) {
+                    return;
+                }
             }
+            downloadDeque.put(task);
         }
-        downloadDeque.put(task);
     }
 
     /**
@@ -176,17 +180,19 @@ public final class DownloadAndUploadThreadPoolManager {
      */
     public synchronized void executeUpload(CustomFuturetask task) throws InterruptedException {
         LinkedBlockingDeque<CustomFuturetask> tmp;
-        if (isAloneUpload) {
-            tmp = uploadDeque;
-        } else {
-            tmp = downloadDeque;
-        }
-        for (CustomFuturetask futuretask : tmp) {
-            if (futuretask.getTaskId() == task.getTaskId()) {
-                return;
+        if (isLaunchUpload.get()) {
+            if (isAloneUpload) {
+                tmp = uploadDeque;
+            } else {
+                tmp = downloadDeque;
             }
+            for (CustomFuturetask futuretask : tmp) {
+                if (futuretask.getTaskId() == task.getTaskId()) {
+                    return;
+                }
+            }
+            tmp.put(task);
         }
-        tmp.put(task);
     }
 
     public boolean remove(CustomFuturetask task, int taskType) {
@@ -252,5 +258,19 @@ public final class DownloadAndUploadThreadPoolManager {
     public void setAloneUpload(boolean aloneUpload) {
         isAloneUpload = aloneUpload;
         createAloneUpload();
+    }
+
+    /**
+     * @return 下载线程池是否开启中，true开启， false 关闭（已停止线程池中所有线程工作）
+     */
+    public AtomicBoolean isLaunchDownload() {
+        return isLaunchDownload;
+    }
+
+    /**
+     * @return 上传线程池是否开启中，true开启， false 关闭（已停止线程池中所有线程工作）
+     */
+    public AtomicBoolean isLaunchUpload() {
+        return isLaunchUpload;
     }
 }

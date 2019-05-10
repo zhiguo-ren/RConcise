@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -17,16 +18,19 @@ import android.widget.Toast;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 import com.egbert.rconcise.internal.ErrorCode;
+import com.egbert.rconcise.task.DownloadUploadThreadPoolManager;
 import com.egbert.rconcise.upload.MultiPartBody;
 import com.egbert.rconcise.upload.RUpload;
 import com.egbert.rconcise.upload.RUploadManager;
 import com.egbert.rconcise.upload.UploadItem;
 import com.egbert.rconcise.upload.listener.IUploadObserver;
 import com.egbert.rconcisecase.model.Upload;
+import com.egbert.rconcisecase.model.User;
 
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import cn.bingoogolapple.progressbar.BGAProgressBar;
@@ -41,7 +45,6 @@ public class UploadActivity extends AppCompatActivity {
     private RecyclerView uploadRv;
     private String url1 = "app/upload1";
     private String url2 = "app/upload2";
-    private ArrayList<Upload> tasks;
     private UploadAdapter adapter;
 
     @Override
@@ -60,6 +63,7 @@ public class UploadActivity extends AppCompatActivity {
             }
         });
         RUploadManager.inst().init(this);
+        DownloadUploadThreadPoolManager.getInst().setAloneUpload(true);
         adapter = new UploadAdapter();
         uploadRv.setAdapter(adapter);
         uploadRv.setLayoutManager(new LinearLayoutManager(this));
@@ -105,9 +109,6 @@ public class UploadActivity extends AppCompatActivity {
         upload.fileName = file.getName();
         upload.isNewTask = true;
         upload.url = url;
-        if (tasks == null) {
-            tasks = new ArrayList<>();
-        }
         tasks.add(upload);
         adapter.addData(tasks);
     }
@@ -156,69 +157,73 @@ public class UploadActivity extends AppCompatActivity {
 
         @Override
         protected void convert(final BaseViewHolder helper, final Upload item) {
+            item.observer = new IUploadObserver() {
+                @Override
+                public void onPause(int uploadId) {
+                    helper.setText(R.id.speed_tv, "暂停上传");
+                    helper.setImageResource(R.id.action_btn, android.R.drawable.ic_media_play);
+                }
+
+                @Override
+                public void onCancel(ErrorCode code) {
+                    helper.setText(R.id.speed_tv, code.getMsg());
+                    helper.setText(R.id.curr_and_total_tv, "");
+                    helper.setImageResource(R.id.action_btn, android.R.drawable.ic_media_play);
+                    helper.setVisible(R.id.action_btn, true);
+                    BGAProgressBar progressBar = helper.getView(R.id.pb);
+                    progressBar.setProgress(0);
+                    getData().remove(item);
+                    notifyDataSetChanged();
+                }
+
+                @Override
+                public void onStart(int uploadId, long totalLength) {
+                    Log.e(TAG, "onStart: " + System.currentTimeMillis() / 1000);
+                    helper.setText(R.id.file_name_tv, item.uploadItem.fileName);
+                    item.total = format.format( totalLength / 1024d / 1024) + "MB";
+                    long curr = item.uploadItem.currLen;
+                    helper.setText(R.id.curr_and_total_tv, format.format(curr / 1024d / 1024) + "MB/" + item.total);
+                }
+
+                @Override
+                public void onProgress(int uploadId, final int uploadPercent, String speed, long bytes) {
+                    helper.setText(R.id.curr_and_total_tv, format.format(bytes / 1024d / 1024) + "MB/"
+                            + item.total);
+                    helper.setText(R.id.speed_tv, speed)
+                            .setText(R.id.percent_tv, uploadPercent + "%");
+                    BGAProgressBar progressBar = helper.getView(R.id.pb);
+                    progressBar.setProgress(uploadPercent);
+                }
+
+                @Override
+                public void onSuccess(int uploadId) {
+                    Log.e(TAG, "onSuccess: " + System.currentTimeMillis() / 1000);
+                    helper.setText(R.id.speed_tv, "上传完成");
+                    helper.setVisible(R.id.action_btn, false);
+                }
+
+                @Override
+                public void onError(int uploadId, ErrorCode code, String msg) {
+                    helper.setText(R.id.speed_tv, msg);
+                    item.isStart = false;
+                }
+
+                @Override
+                public void onFailure(int uploadId, ErrorCode code, int httpCode, String msg) {
+                    helper.setText(R.id.speed_tv, msg);
+                    helper.setImageResource(R.id.action_btn, android.R.drawable.ic_media_play);
+                }
+            };
             if (item.uploadItem == null) {
-                item.observer = new IUploadObserver() {
-                    @Override
-                    public void onPause(int uploadId) {
-                        helper.setText(R.id.speed_tv, "暂停上传");
-                    }
-
-                    @Override
-                    public void onCancel(ErrorCode code) {
-                        helper.setText(R.id.speed_tv, code.getMsg());
-                        helper.setText(R.id.curr_and_total_tv, "");
-                        helper.setImageResource(R.id.action_btn, android.R.drawable.ic_media_play);
-                        helper.setVisible(R.id.action_btn, true);
-                        BGAProgressBar progressBar = helper.getView(R.id.pb);
-                        progressBar.setProgress(0);
-                        getData().remove(item);
-                        notifyDataSetChanged();
-                    }
-
-                    @Override
-                    public void onStart(int uploadId, long totalLength) {
-                        helper.setText(R.id.file_name_tv, item.uploadItem.fileName);
-                        item.total = format.format( totalLength / 1024d / 1024) + "MB";
-                        long curr = item.uploadItem.currLen;
-                        helper.setText(R.id.curr_and_total_tv, format.format(curr / 1024d / 1024) + "MB/" + item.total);
-                    }
-
-                    @Override
-                    public void onProgress(int uploadId, final int uploadPercent, String speed, long bytes) {
-                        helper.setText(R.id.curr_and_total_tv, format.format(bytes / 1024d / 1024) + "MB/"
-                                + item.total);
-                        helper.setText(R.id.speed_tv, speed);
-                        BGAProgressBar progressBar = helper.getView(R.id.pb);
-                        progressBar.setProgress(uploadPercent);
-                    }
-
-                    @Override
-                    public void onSuccess(int uploadId) {
-                        helper.setText(R.id.speed_tv, "上传完成");
-                        helper.setVisible(R.id.action_btn, false);
-                    }
-
-                    @Override
-                    public void onError(int uploadId, ErrorCode code, String msg) {
-                        helper.setText(R.id.speed_tv, msg);
-                        item.isStart = false;
-                    }
-
-                    @Override
-                    public void onFailure(int uploadId, ErrorCode code, int httpCode, String msg) {
-                        helper.setText(R.id.speed_tv, msg);
-                        helper.setImageResource(R.id.action_btn, android.R.drawable.ic_media_play);
-                    }
-                };
                 if (item.isNewTask) {
                     item.isNewTask = false;
                     item.isStart = true;
                     MultiPartBody body = new MultiPartBody();
                     MultiPartBody.Part part = MultiPartBody.createPart(new File(item.filePath), "file");
                     part.dispositionFilename(item.fileName);
-            //        part.contentType("image/jpeg");
                     body.addPart(part);
-                    body.addPart(MultiPartBody.createPart("this is a test data.", "param"));
+                    body.addPart(MultiPartBody.createPart(new User("rzg", "30",
+                            "123456", "男"), "param"));
                     int id = RUpload.Builder.create(item.url)
                             .rClientKey(RCLIENT_KEY)
                             .multiPartBody(body)
@@ -236,9 +241,12 @@ public class UploadActivity extends AppCompatActivity {
                         MultiPartBody body = new MultiPartBody();
                         MultiPartBody.Part part = MultiPartBody.createPart(new File(item.filePath), "file");
                         part.dispositionFilename(item.fileName);
-                        //        part.contentType("image/jpeg");
                         body.addPart(part);
-                        body.addPart(MultiPartBody.createPart("this is a test data.", "param"));
+                        HashMap<String, String> param = new HashMap<>();
+                        param.put("param1", "参数1");
+                        param.put("param2", "参数2");
+                        param.put("param3", "参数3");
+                        body.addPart(MultiPartBody.createPart(param, "param"));
                         item.id = uploadFile(item.url, item.observer, body);
                         item.uploadItem = RUploadManager.inst().queryById(item.id);
                         item.isCancel = false;
@@ -259,6 +267,8 @@ public class UploadActivity extends AppCompatActivity {
                         item.isCancel = true;
                         item.isStart = false;
                         RUploadManager.inst().cancel(item.id);
+                        getData().remove(item);
+                        notifyDataSetChanged();
                     }
                 }
             });
