@@ -1,7 +1,7 @@
 # RConcise 
 网络请求库，基于httpUrlConnection完成，包括post，get网络请求，批量上传，批量下载，断点下载，链式调用等，后期将支持https，使用简单方便。
 
-使用方式： compile 'com.egbert.rconcise:rconcise:1.0.4' // 持续更新
+使用方式： implementation 'com.egbert.rconcise:rconcise:1.0.4' // 持续更新
 
 详细使用看demo 请将demo中的请求地址更换为自己的服务端地址
 
