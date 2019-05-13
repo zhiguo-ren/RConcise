@@ -6,11 +6,11 @@ import com.egbert.rconcise.internal.Utils;
 import java.util.ArrayList;
 
 /**
- * 网络请求客户端，用于配置网络请求的公用<code>baseUrl<code/>和添加拦截器（可用于拦截请求，对请求和响应进行附加操作）.
+ * 网络请求客户端，用于配置网络请求的公用{@code baseUrl}和添加拦截器（可用于拦截请求，对请求和响应进行附加操作）.
  * <p>
- * 如果app内有多个<code>baseUrl<code/>（比如会调用不同的web服务端提供的接口），可以创建多个<code>RClient<code/>实例，
- * 通过<code>Request<code/>(参见{@link com.egbert.rconcise.internal.http.Request Request})在请求时指定具体使用的
- * <code>RClient<code/>，适配多<code>baseUrl<code/>的场景.
+ * 如果app内有多个{@code baseUrl}（比如会调用不同的web服务端提供的接口），可以创建多个{@code RClient}实例，
+ * 通过{@code Request}(参见{@link com.egbert.rconcise.internal.http.Request Request})在请求时指定具体使用的
+ * {@code RClient}，适配多{@code baseUrl}的场景.
  * <p><br>
  * Created by Egbert on 3/5/2019.
  */

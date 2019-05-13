@@ -73,7 +73,7 @@ public class MultiPartBody {
     }
 
     /**
-     * <code>Part<code/>用于封装multipart/form-data协议中每个上传块的数据
+     * {@code Part}用于封装multipart/form-data协议中每个上传块的数据
      */
     public static class Part {
         // 每个part的头信息

@@ -49,10 +49,10 @@ public final class ThreadPoolManager {
     private ThreadPoolManager() {
         deque = new LinkedBlockingDeque<>();
         int num = Runtime.getRuntime().availableProcessors() * 2;
-        executor.allowCoreThreadTimeOut(true);
         executor = new ThreadPoolExecutor(8, 8, 20,
                 TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(num),
                 new CustomThreadFactory("normal"), handler);
+        executor.allowCoreThreadTimeOut(true);
         executor.execute(runnable);
     }
 

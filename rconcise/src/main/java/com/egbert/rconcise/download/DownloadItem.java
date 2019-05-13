@@ -68,7 +68,7 @@ public class DownloadItem extends BaseItem<DownloadItem> {
     @FieldName("stop_mode")
     public Integer stopMode;
     /**
-     * 下载状态 对应<code>TaskStatus<code/>的枚举类
+     * 下载状态 对应{@code TaskStatus}的枚举类
      * @see com.egbert.rconcise.enums.TaskStatus TaskStatus
      */
     public Integer status;

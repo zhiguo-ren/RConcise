@@ -1,6 +1,7 @@
 package com.egbert.rconcisecase;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -119,6 +120,16 @@ public class DownloadActivity extends AppCompatActivity {
                     public void onError(int downloadId, ErrorCode code, String msg) {
                         helper.setText(R.id.speed_tv, msg);
                         item.isStart = false;
+                        if (code.getCode() == 1) {
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (item.downloadItem != null) {
+                                        helper.setText(R.id.file_name_tv, item.downloadItem.fileName);
+                                    }
+                                }
+                            }, 50);
+                        }
                     }
 
                     @Override

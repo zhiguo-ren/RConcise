@@ -69,7 +69,7 @@ public class UploadItem extends BaseItem<UploadItem> {
     @FieldName("stop_mode")
     public Integer stopMode;
     /**
-     * 上传状态 对应<code>TaskStatus<code/>的枚举类
+     * 上传状态 对应{@code TaskStatus}的枚举类
      * @see com.egbert.rconcise.enums.TaskStatus TaskStatus
      */
     public Integer status;

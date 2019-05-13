@@ -129,7 +129,7 @@ public class UploadActivity extends AppCompatActivity {
 
     public static String getPath(Context context, Uri uri) {
         if ("content".equalsIgnoreCase(uri.getScheme())) {
-            String[] projection = { "_data" };
+            String[] projection = {"_data"};
             Cursor cursor = null;
             try {
                 cursor = context.getContentResolver().query(uri, projection, null, null, null);
@@ -140,8 +140,7 @@ public class UploadActivity extends AppCompatActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-        else if ("file".equalsIgnoreCase(uri.getScheme())) {
+        } else if ("file".equalsIgnoreCase(uri.getScheme())) {
             return uri.getPath();
         }
         return null;
@@ -180,7 +179,7 @@ public class UploadActivity extends AppCompatActivity {
                 public void onStart(int uploadId, long totalLength) {
                     Log.e(TAG, "onStart: " + System.currentTimeMillis() / 1000);
                     helper.setText(R.id.file_name_tv, item.uploadItem.fileName);
-                    item.total = format.format( totalLength / 1024d / 1024) + "MB";
+                    item.total = format.format(totalLength / 1024d / 1024) + "MB";
                     long curr = item.uploadItem.currLen;
                     helper.setText(R.id.curr_and_total_tv, format.format(curr / 1024d / 1024) + "MB/" + item.total);
                 }

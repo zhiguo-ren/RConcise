@@ -10,9 +10,7 @@ import com.egbert.rconcise.internal.Utils;
 import com.egbert.rconcise.task.ReqTask;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.egbert.rconcise.database.dao.RDaoFactory.DB_NAME;
@@ -33,9 +31,7 @@ public class RUploadManager {
      *
      */
     private static HashMap<String, String> sHeaders = new HashMap<>();
-    private String packageName;
     private UploadDao uploadDao;
-    private SimpleDateFormat dateFormat;
     private AtomicBoolean isInit = new AtomicBoolean(false);
 
     private RUploadManager() {
@@ -53,8 +49,6 @@ public class RUploadManager {
         if (isInit.compareAndSet(false, true)) {
             RDaoFactory.getInst().openOrCreateDb(DB_NAME, context);
             uploadDao = RDaoFactory.getInst().getDao(UploadDao.class, UploadItem.class, DB_NAME);
-            dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.CHINA);
-            packageName = context.getPackageName();
         }
     }
 
@@ -175,7 +169,7 @@ public class RUploadManager {
      * 添加上传操作的全局请求头header
      * @param headerKey   请求头key
      * @param headerValue 请求头value
-     *  <p>例如：<code>headerMap.put("Content-Type", "application/x-www-form-urlencoded");<code/>
+     *  <p>例如：{@code headerMap.put("Content-Type", "application/x-www-form-urlencoded");}
      * @see RUploadManager#sHeaders
      */
     public static void addHeader(String headerKey, String headerValue) {

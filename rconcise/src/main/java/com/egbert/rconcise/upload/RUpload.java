@@ -138,7 +138,7 @@ public class RUpload implements IRequest {
 
         /**
          * 单个添加请求头 如：<br>
-         * <code>headerMap.put("Content-Type", "application/x-www-form-urlencoded");<code/>
+         * {@code headerMap.put("Content-Type", "application/x-www-form-urlencoded");}
          */
         public Builder addHeader(String name, String value) {
             if (headers == null) {

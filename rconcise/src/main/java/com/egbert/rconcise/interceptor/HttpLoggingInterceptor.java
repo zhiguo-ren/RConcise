@@ -13,11 +13,11 @@ import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static com.egbert.rconcise.internal.Const.UTF8;
 import static com.egbert.rconcise.internal.Utils.TAG;
 
 /**
@@ -153,15 +153,15 @@ public class HttpLoggingInterceptor implements Interceptor {
                 if (TextUtils.isEmpty(contentType) || type.contains(contentType)) {
                     StringBuilder builder = Utils.parseParams(reqParams, false);
                     if (builder != null && builder.length() > 0) {
-                        params = builder.toString().getBytes(StandardCharsets.UTF_8);
+                        params = builder.toString().getBytes(UTF8);
                     }
                 } else if (ContentType.JSON.getValue().contains(contentType)) {
                     String json = new Gson().toJson(reqParams);
-                    params = json.getBytes(StandardCharsets.UTF_8);
+                    params = json.getBytes(UTF8);
                 } else {
-                    params = reqParams.toString().getBytes(StandardCharsets.UTF_8);
+                    params = reqParams.toString().getBytes(UTF8);
                 }
-                logger.log(new String(params, StandardCharsets.UTF_8));
+                logger.log(new String(params, UTF8));
                 logger.log("--> END " + request.method()
                         + " (" + (params == null ? 0 : params.length) + "-byte body)");
             }

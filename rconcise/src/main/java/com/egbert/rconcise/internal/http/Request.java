@@ -151,7 +151,7 @@ public final class Request implements IRequest {
 
         /**
          * 批量设置请求头属性,将请求头以key-value的形式装入map，如<p>
-         *     <code>headerMap.put("Content-Type", "application/x-www-form-urlencoded");<code/>
+         *     {@code headerMap.put("Content-Type", "application/x-www-form-urlencoded");}
          */
         public Builder addHeaders(HashMap<String, String> headerMap) {
             if (headerMap != null) {
