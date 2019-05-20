@@ -21,7 +21,7 @@ import com.egbert.rconcise.listener.IRespListener;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     public static final String RCLIENT_KEY = "test";
     private static final int WRITE_REQUEST_CODE = 1;
-    public static final String BASE_URL = "http://192.168.1.36:8080/tmall/";
+    public static final String BASE_URL = "http://192.168.1.34:8080/tmall/";
     public static final String URL = "app/cs";
 
     private Button buttonGet;
@@ -43,6 +43,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         upload.setOnClickListener(this);
         RClient rClient = RConcise.inst().createRClient(RCLIENT_KEY);
         rClient.setBaseUrl(BASE_URL);
+        /*try {
+            rClient.setSelfCert(true, getAssets().open("cacert.pem"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
         interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         rClient.addInterceptor(interceptor);
@@ -55,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .addParam("param1", args[1])
                 .addParam("param2", args[2])
                 .addParam("param3", args[3])
-                .client(RConcise.inst().rClient("test"))
+                .client(RConcise.inst().rClient(RCLIENT_KEY))
                 .respStrListener(new IRespListener<String>() {
                     @Override
                     public void onSuccess(String s) {

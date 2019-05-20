@@ -3,7 +3,10 @@ package com.egbert.rconcise.service;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.egbert.rconcise.RClient;
+import com.egbert.rconcise.RConcise;
 import com.egbert.rconcise.enums.TaskStatus;
+import com.egbert.rconcise.internal.Const;
 import com.egbert.rconcise.internal.ContentType;
 import com.egbert.rconcise.internal.ErrorCode;
 import com.egbert.rconcise.internal.HeaderField;
@@ -31,6 +34,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import static com.egbert.rconcise.internal.Const.BOUNDARY;
 import static com.egbert.rconcise.internal.Const.BOUNDARY_PREFIX;
@@ -99,7 +104,12 @@ public class UploadServiceImpl implements IReqService, IDownloadOrUploadReqServi
             if (isPause() || isCancel()) {
                 return;
             }
-            connection = (HttpURLConnection) new URL(rUpload.url()).openConnection();
+            URL reqUrl = new URL(rUpload.url());
+            connection = (HttpURLConnection) reqUrl.openConnection();
+            RClient rClient = RConcise.inst().rClient(rUpload.rClientKey());
+            if (reqUrl.getProtocol().equalsIgnoreCase(Const.HTTPS) && rClient.isSelfCert()) {
+                ((HttpsURLConnection)connection).setSSLSocketFactory(rClient.getSSlSocketFactory());
+            }
             connection.setRequestMethod(ReqMethod.POST.getMethod());
             connection.setConnectTimeout(20000);
             connection.setDoOutput(true);

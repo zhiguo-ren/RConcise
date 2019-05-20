@@ -41,6 +41,23 @@ Request.Builder builder = Request.Builder.create(URL)
                     }
                 })
                 .get(); //或者post(); 即可发送get或post请求
+                // 如果响应数据为json，回调接口泛型可使用实体bean，自动将json转为实体对象
+                builder.respListener(User.class, new IRespListener<User>() {
+                    @Override
+                    public void onSuccess(User user) {
+                        
+                    }
+        
+                    @Override
+                    public void onError(Exception e, String desp) {
+        
+                    }
+        
+                    @Override
+                    public void onFailure(int respCode, String desp) {
+        
+                    }
+                });
 ```
 
 #### 下载文件

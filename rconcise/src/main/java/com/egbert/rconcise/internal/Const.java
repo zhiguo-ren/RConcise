@@ -14,7 +14,7 @@ public final class Const {
     public static final String CRLF = "\r\n";
     public static final String BOUNDARY = UUID.randomUUID().toString();
     public static final String HTTP = "http://";
-    public static final String HTTPS = "https://";
+    public static final String HTTPS = "https";
     public static final String HTTP_SEPARATOR = "/";
     public static final String BOUNDARY_PREFIX = "--";
 

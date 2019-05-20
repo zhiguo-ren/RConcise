@@ -1,5 +1,7 @@
 package com.egbert.rconcise.interceptor;
 
+import com.egbert.rconcise.RClient;
+import com.egbert.rconcise.internal.Const;
 import com.egbert.rconcise.internal.ContentType;
 import com.egbert.rconcise.internal.HeaderField;
 import com.egbert.rconcise.internal.ReqMethod;
@@ -13,6 +15,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Created by Egbert on 3/5/2019.
@@ -40,6 +44,10 @@ public class CallNetServiceInterceptor implements Interceptor {
         try {
             URL reqUrl = new URL(request.url());
             connection = (HttpURLConnection) reqUrl.openConnection();
+            RClient rClient = request.rClient();
+            if (reqUrl.getProtocol().equalsIgnoreCase(Const.HTTPS) && rClient.isSelfCert()) {
+                ((HttpsURLConnection)connection).setSSLSocketFactory(rClient.getSSlSocketFactory());
+            }
             connection.setRequestMethod(request.method());
             if (request.method().equalsIgnoreCase(ReqMethod.POST.getMethod())) {
                 connection.setDoOutput(true);

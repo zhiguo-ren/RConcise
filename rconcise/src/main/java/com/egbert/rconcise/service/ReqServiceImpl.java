@@ -41,7 +41,7 @@ public class ReqServiceImpl implements IReqService {
             response = getResponseByInterceptors();
             int respCode = response.respCode();
             String respStr = response.respStr();
-            if (respCode == HttpURLConnection.HTTP_OK || respCode == HttpURLConnection.HTTP_PARTIAL) {
+            if (respCode == HttpURLConnection.HTTP_OK) {
                 //响应头
                 Map<String, List<String>> headerMap = response.headers();
                 httpRespListener.onSuccess(respStr, headerMap);
