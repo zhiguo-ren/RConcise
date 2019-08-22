@@ -133,7 +133,7 @@ DownloadUploadThreadPoolManager.getInst().terminateUpload();
 DownloadUploadThreadPoolManager.getInst().launchUpload();
 ```
 ---
-版本1.0.5
+#### 版本1.0.5
 1、本次更新增加了head，put，delete，patch请求方法；
 2、增加了路径动态添加操作，如addPath("123")方法会在URL后追加，如：/abc/dbc/123，
     或setPath("id", "123456")方法会在预留位置加入，如：/abc/{id}/file,
