@@ -12,7 +12,27 @@ public enum ReqMethod {
     /**
      * post 请求
      */
-    POST        ("POST");
+    POST        ("POST"),
+
+    /**
+     * head 请求
+     */
+    HEAD        ("HEAD"),
+
+    /**
+     * put 请求
+     */
+    PUT        ("PUT"),
+
+    /**
+     * delete 请求
+     */
+    DELETE     ("DELETE"),
+
+    /**
+     * patch 请求
+     */
+    PATCH     ("PATCH");
 
     private String method;
 

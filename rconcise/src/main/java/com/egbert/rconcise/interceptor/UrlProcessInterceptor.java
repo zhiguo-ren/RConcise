@@ -1,11 +1,15 @@
 package com.egbert.rconcise.interceptor;
 
-import com.egbert.rconcise.internal.ReqMethod;
+import android.text.TextUtils;
+
+import com.egbert.rconcise.internal.Const;
 import com.egbert.rconcise.internal.Utils;
 import com.egbert.rconcise.internal.http.Request;
 import com.egbert.rconcise.internal.http.Response;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.Map;
 
 /**
  * 加工url的拦截器
@@ -18,24 +22,44 @@ public class UrlProcessInterceptor implements Interceptor {
         Request request = chain.request();
         String relativeUrl = request.url();
         String baseUrl = request.rClient().getBaseUrl();
-        String absoluteUrl;
+        StringBuilder absoluteUrl;
+        if (request.pathMap() != null && request.pathMap().size() > 0) {
+            if (!TextUtils.isEmpty(relativeUrl)) {
+                for (Map.Entry<String, String> entry : request.pathMap().entrySet()) {
+                    relativeUrl = relativeUrl.replace("{" + entry.getKey() + "}",
+                            URLEncoder.encode(String.valueOf(entry.getValue()),
+                                    Const.UTF8));
+                }
+            }
+        }
         if (Utils.verifyUrl(relativeUrl, false)) {
-            absoluteUrl = relativeUrl;
+            absoluteUrl = new StringBuilder(relativeUrl);
         } else {
             if (Utils.verifyUrl(baseUrl, true)) {
-                absoluteUrl = baseUrl + relativeUrl;
+                absoluteUrl = new StringBuilder(baseUrl + relativeUrl);
             } else {
                 throw new IllegalArgumentException("The BaseUrl is illegal.");
             }
         }
-        if (ReqMethod.GET.getMethod().equalsIgnoreCase(request.method())) {
-            StringBuilder builder = Utils.parseParams(request.reqParams(), true);
-            if (builder != null && builder.length() > 0) {
-                builder.insert(0, "?");
-                absoluteUrl += builder.toString();
+        if (!TextUtils.isEmpty(absoluteUrl.toString())) {
+            if (request.pathList() != null && request.pathList().size() > 0) {
+                for (String s : request.pathList()) {
+                    if (absoluteUrl.toString().endsWith(Const.HTTP_SEPARATOR)) {
+                        absoluteUrl.append(s);
+                    } else {
+                        absoluteUrl.append(Const.HTTP_SEPARATOR).append(s);
+                    }
+                }
             }
         }
-        request = request.newBuilder().url(absoluteUrl).build();
+        if (!request.isInBody()) {
+            StringBuilder builder = Utils.parseParams(request.reqParams(), false);
+            if (builder != null && builder.length() > 0) {
+                builder.insert(0, "?");
+                absoluteUrl.append(builder.toString());
+            }
+        }
+        request = request.newBuilder().url(absoluteUrl.toString()).build();
         return chain.proceed(request);
     }
 }

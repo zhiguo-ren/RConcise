@@ -83,7 +83,7 @@ public class Utils {
     /**
      * 解析请求参数
      */
-    public static StringBuilder parseParams(Object reqParams, boolean isGet) throws UnsupportedEncodingException {
+    public static StringBuilder parseParams(Object reqParams, boolean isInBody) throws UnsupportedEncodingException {
         Map<String, String> map;
         if (reqParams instanceof Map) {
             map = (Map<String, String>) reqParams;
@@ -96,7 +96,7 @@ public class Utils {
             for (Map.Entry entry : map.entrySet()) {
                 builder.append(entry.getKey())
                         .append("=")
-                        .append(isGet ? URLEncoder.encode(String.valueOf(entry.getValue()),
+                        .append(!isInBody ? URLEncoder.encode(String.valueOf(entry.getValue()),
                                 Const.UTF8) : entry.getValue())
                         .append("&");
             }
@@ -119,7 +119,7 @@ public class Utils {
             contentType = tmpType;
         }
         if (tmpType.contains(contentType)) {
-            StringBuilder builder = Utils.parseParams(reqParams, false);
+            StringBuilder builder = Utils.parseParams(reqParams, true);
             if (builder != null && builder.length() > 0) {
                 params = builder.toString().getBytes(Const.UTF8);
             }

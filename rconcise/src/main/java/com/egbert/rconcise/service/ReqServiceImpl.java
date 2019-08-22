@@ -11,6 +11,7 @@ import com.egbert.rconcise.internal.Utils;
 import com.egbert.rconcise.internal.http.IRequest;
 import com.egbert.rconcise.internal.http.Request;
 import com.egbert.rconcise.internal.http.Response;
+import com.egbert.rconcise.listener.IHttpHeaderListener;
 import com.egbert.rconcise.listener.IHttpRespListener;
 
 import java.io.IOException;
@@ -27,12 +28,14 @@ public class ReqServiceImpl implements IReqService {
 
     private Request request;
     private IHttpRespListener httpRespListener;
+    private IHttpHeaderListener headerListener;
     private Response response;
 
     @Override
     public void setRequest(IRequest request) {
         this.request = (Request) request;
         httpRespListener = this.request.respListener();
+        headerListener = this.request.headerListener();
     }
 
     @Override
@@ -41,17 +44,26 @@ public class ReqServiceImpl implements IReqService {
             response = getResponseByInterceptors();
             int respCode = response.respCode();
             String respStr = response.respStr();
-            if (respCode == HttpURLConnection.HTTP_OK) {
-                //响应头
-                Map<String, List<String>> headerMap = response.headers();
-                httpRespListener.onSuccess(respStr, headerMap);
-            } else if (respCode >= HttpURLConnection.HTTP_INTERNAL_ERROR) {
-                httpRespListener.onFailure(respCode, TextUtils.isEmpty(respStr) ? response.message() : respStr);
-            } else {
-                httpRespListener.onFailure(respCode, response.message());
+            //响应头
+            Map<String, List<String>> headerMap = response.headers();
+            if (headerListener != null) {
+                headerListener.onHeaders(headerMap);
+            }
+            if (httpRespListener != null) {
+                if (respCode == HttpURLConnection.HTTP_OK
+                        || respCode == HttpURLConnection.HTTP_CREATED
+                        || respCode == HttpURLConnection.HTTP_NO_CONTENT) {
+                    httpRespListener.onSuccess(respStr, headerMap);
+                } else if (respCode >= HttpURLConnection.HTTP_INTERNAL_ERROR) {
+                    httpRespListener.onFailure(respCode, TextUtils.isEmpty(respStr) ? response.message() : respStr);
+                } else {
+                    httpRespListener.onFailure(respCode, response.message());
+                }
             }
         } catch (Exception e) {
-            httpRespListener.onError(e);
+            if (httpRespListener != null) {
+                httpRespListener.onError(e);
+            }
             Log.e(Utils.TAG, Log.getStackTraceString(e));
         }
     }

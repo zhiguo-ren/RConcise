@@ -1,7 +1,7 @@
 # RConcise 
 网络请求库，基于httpUrlConnection完成，包括post，get网络请求，批量上传，批量下载，断点下载，链式调用等，后期将支持https，使用简单方便。
 
-使用方式： implementation 'com.egbert.rconcise:rconcise:1.0.4' // 持续更新
+使用方式： implementation 'com.egbert.rconcise:rconcise:1.0.5' // 持续更新
 
 详细使用看demo 请将demo中的请求地址更换为自己的服务端地址
 
@@ -132,7 +132,15 @@ DownloadUploadThreadPoolManager.getInst().terminateUpload();
 // 启动上传线程池
 DownloadUploadThreadPoolManager.getInst().launchUpload();
 ```
-
+---
+版本1.0.5
+1、本次更新增加了head，put，delete，patch请求方法；
+2、增加了路径动态添加操作，如addPath("123")方法会在URL后追加，如：/abc/dbc/123，
+    或setPath("id", "123456")方法会在预留位置加入，如：/abc/{id}/file,
+    会将{id}替换成setPath("id", "123456")的id对应的值"123456"，url最终变成/abc/123456/file；
+3、Request 增加了IHttpHeaderListener回调接口，用于获取响应头数据；
+4、Request增加isInBody变量，如果使用put，delete，patch，head等方法，请设置isInBody的值，
+    true为请求体传参，false为url拼接传参类似get请求；
 
 
 

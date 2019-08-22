@@ -5,6 +5,7 @@ import android.text.TextUtils;
 
 import com.egbert.rconcise.RClient;
 import com.egbert.rconcise.internal.ReqMethod;
+import com.egbert.rconcise.listener.IHttpHeaderListener;
 import com.egbert.rconcise.listener.IHttpRespListener;
 import com.egbert.rconcise.listener.IRespListener;
 import com.egbert.rconcise.listener.JsonRespListenerImpl;
@@ -12,6 +13,7 @@ import com.egbert.rconcise.listener.StringRespListener;
 import com.egbert.rconcise.task.ReqTask;
 import com.egbert.rconcise.task.ThreadPoolManager;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,10 +24,14 @@ import java.util.Map;
 public final class Request implements IRequest {
     private final RClient rClient;
     private final IHttpRespListener respListener;
+    private final IHttpHeaderListener headerListener;
     private final Object reqParams;
     private final String url;
     private final HashMap<String, String> headerMap;
     private final String method;
+    private final HashMap<String, String> pathMap;
+    private final ArrayList<String> pathList;
+    private final boolean isInBody;
 
     /**
      * method  请求方法必须全部大写<p>
@@ -38,10 +44,14 @@ public final class Request implements IRequest {
     private Request(Builder builder) {
         this.rClient = builder.rClient;
         this.respListener = builder.respListener;
+        this.headerListener = builder.headerListener;
         this.reqParams = builder.reqParams;
         this.url = builder.url;
         this.headerMap = builder.headerMap;
         this.method = builder.method;
+        this.pathMap = builder.pathMap;
+        this.pathList = builder.pathList;
+        this.isInBody = builder.isInBody;
     }
 
     public Builder newBuilder() {
@@ -56,6 +66,10 @@ public final class Request implements IRequest {
         return respListener;
     }
 
+    public IHttpHeaderListener headerListener() {
+        return headerListener;
+    }
+
     public Object reqParams() {
         return reqParams;
     }
@@ -68,6 +82,18 @@ public final class Request implements IRequest {
         return headerMap;
     }
 
+    public HashMap<String, String> pathMap() {
+        return pathMap;
+    }
+
+    public ArrayList<String> pathList() {
+        return pathList;
+    }
+
+    public boolean isInBody() {
+        return isInBody;
+    }
+
     public String method() {
         return method;
     }
@@ -75,11 +101,15 @@ public final class Request implements IRequest {
     public static class Builder {
         private RClient rClient;
         private IHttpRespListener respListener;
+        private IHttpHeaderListener headerListener;
         private Object reqParams;
         private String url;
         private HashMap<String, String> headerMap;
         private String method;
         private Map<String, String> params;
+        private HashMap<String, String> pathMap;
+        private ArrayList<String> pathList;
+        private boolean isInBody;
 
         private Builder(String url) {
             this.url = url;
@@ -92,10 +122,14 @@ public final class Request implements IRequest {
         public Builder(Request req) {
             this.rClient = req.rClient;
             this.respListener = req.respListener;
+            this.headerListener = req.headerListener;
             this.reqParams = req.reqParams;
             this.url = req.url;
             this.headerMap = req.headerMap;
             this.method = req.method;
+            this.pathMap = req.pathMap;
+            this.pathList = req.pathList;
+            this.isInBody = req.isInBody;
         }
 
         public Builder client(@NonNull RClient rClient) {
@@ -131,12 +165,57 @@ public final class Request implements IRequest {
         }
 
         /**
+         * 设置请求路径
+         * @param path  动态追加url路径，兼容restful，该路径默认拼接到url后，
+         *              如果要指定添加位置请使用{@link #setPath}
+         */
+        public Builder addPath(String path) {
+            if (pathList == null) {
+                pathList = new ArrayList<>();
+            }
+            pathList.add(path);
+            return this;
+        }
+
+        /**
+         * 设置请求路径
+         * @param key    url路径中占位名称，key和占位名称必须一致，如: example/{id}/files
+         * @param path  动态设置url路径，兼容restful
+         */
+        public Builder setPath(String key, String path) {
+            if (pathMap == null) {
+                pathMap = new HashMap<>();
+            }
+            pathMap.put(key, path);
+            return this;
+        }
+
+        /**
+         * 设置传参数形式
+         * @param isInBody  true参数存在请求体body中， false参数拼接到url后，和get请求一样，
+         *                  post和get请求无需设置此值，使用put，delete，patch等方法时，请设置此值，否则默认为false；
+         */
+        public Builder setIsInBody(boolean isInBody) {
+            this.isInBody = isInBody;
+            return this;
+        }
+
+        /**
          * 设置响应结果监听器
          * @param resp json转实体对象的具体实体类型
          * @param listener 响应回调接口
          */
         public <T> Builder respListener(Class<T> resp, IRespListener<T> listener) {
             this.respListener = new JsonRespListenerImpl<>(resp, listener);
+            return this;
+        }
+
+        /**
+         * 设置响应头监听器
+         * @param listener 响应头回调接口, 返回全部响应头信息
+         */
+        public Builder headerListener(IHttpHeaderListener listener) {
+            this.headerListener = listener;
             return this;
         }
 
@@ -177,13 +256,16 @@ public final class Request implements IRequest {
 
         /**
          * 发送请求
-         * @param method 请求方法，不设置默认为GET
+         * @param method 请求方法，不设置默认为GET, 必须大写, 建议使用{@link ReqMethod}传参
          */
         public Builder sendReq(String method) {
             if (TextUtils.isEmpty(method)) {
                 this.method = ReqMethod.GET.getMethod();
             } else {
                 this.method = method;
+            }
+            if (this.method.equalsIgnoreCase(ReqMethod.POST.getMethod())) {
+                isInBody = true;
             }
             enqueue(build());
             return this;

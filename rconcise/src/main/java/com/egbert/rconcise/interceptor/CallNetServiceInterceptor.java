@@ -4,7 +4,6 @@ import com.egbert.rconcise.RClient;
 import com.egbert.rconcise.internal.Const;
 import com.egbert.rconcise.internal.ContentType;
 import com.egbert.rconcise.internal.HeaderField;
-import com.egbert.rconcise.internal.ReqMethod;
 import com.egbert.rconcise.internal.Utils;
 import com.egbert.rconcise.internal.http.Request;
 import com.egbert.rconcise.internal.http.Response;
@@ -32,7 +31,7 @@ public class CallNetServiceInterceptor implements Interceptor {
         Object reqParams = request.reqParams();
 
         byte[] params = null;
-        if (request.method().equalsIgnoreCase(ReqMethod.POST.getMethod()) && reqParams != null) {
+        if (request.isInBody() && reqParams != null) {
             String contentType = null;
             if (headerMap != null) {
                 contentType = headerMap.get(HeaderField.CONTENT_TYPE.getValue());
@@ -49,7 +48,7 @@ public class CallNetServiceInterceptor implements Interceptor {
                 ((HttpsURLConnection)connection).setSSLSocketFactory(rClient.getSSlSocketFactory());
             }
             connection.setRequestMethod(request.method());
-            if (request.method().equalsIgnoreCase(ReqMethod.POST.getMethod())) {
+            if (request.isInBody()) {
                 connection.setDoOutput(true);
             }
             //默认Content-Type值为application/x-www-form-urlencoded
@@ -62,7 +61,7 @@ public class CallNetServiceInterceptor implements Interceptor {
             }
             builder.reqStartTime(System.currentTimeMillis());
             connection.connect();
-            if (request.method().equalsIgnoreCase(ReqMethod.POST.getMethod()) && params != null) {
+            if (request.isInBody() && params != null) {
                 BufferedOutputStream writer = new BufferedOutputStream(connection.getOutputStream());
                 writer.write(params);
                 writer.close();
