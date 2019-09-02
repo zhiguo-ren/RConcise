@@ -133,14 +133,32 @@ DownloadUploadThreadPoolManager.getInst().terminateUpload();
 DownloadUploadThreadPoolManager.getInst().launchUpload();
 ```
 ---
-#### 版本1.0.5
-1、本次更新增加了head，put，delete，patch请求方法；
+#### 版本更新日志
+```
+##### 版本1.0.5
+1、本次更新增加了head，put，delete，patch请求方法;
 2、增加了路径动态添加操作，如addPath("123")方法会在URL后追加，如：/abc/dbc/123，
     或setPath("id", "123456")方法会在预留位置加入，如：/abc/{id}/file,
-    会将{id}替换成setPath("id", "123456")的id对应的值"123456"，url最终变成/abc/123456/file；
-3、Request 增加了IHttpHeaderListener回调接口，用于获取响应头数据；
+    会将{id}替换成setPath("id", "123456")的id对应的值"123456"，url最终变成/abc/123456/file;
+3、Request 增加了IHttpHeaderListener回调接口，用于获取响应头数据;
 4、Request增加isInBody变量，如果使用put，delete，patch，head等方法，请设置isInBody的值，
-    true为请求体传参，false为url拼接传参类似get请求；
+    true为请求体传参，false为url拼接传参类似get请求;
+```
 
+```
+##### 版本1.0.6
+1、本次更新增加了上传回调成功后返回响应体内容onSuccess(int uploadId, String resp);
+```
+
+```
+##### 版本1.0.7
+1、本次更新升级到了api 29，用getExternalFilesDir替换了已被弃用的getExternalStorageDirectory方法，
+    下载文件只能存到Android/data/应用包名/files/Download下;
+```
+
+```
+##### 版本1.0.8
+1、本次更新修改了request支持的参数类型，支持除了string以外的其他类型，如int，float等;
+```
 
 

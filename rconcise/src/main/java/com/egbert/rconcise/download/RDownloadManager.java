@@ -31,6 +31,7 @@ public class RDownloadManager {
     private DownloadDao downloadDao;
     private SimpleDateFormat dateFormat;
     private static volatile RDownloadManager sManager;
+    private Context appCtx;
     private AtomicBoolean isInit = new AtomicBoolean(false);
 
     private RDownloadManager() {
@@ -53,6 +54,7 @@ public class RDownloadManager {
      */
     public synchronized void init(Context context) {
         if (isInit.compareAndSet(false, true)) {
+            appCtx = context.getApplicationContext();
             RDaoFactory.getInst().openOrCreateDb(DB_NAME, context);
             downloadDao = RDaoFactory.getInst().getDao(DownloadDao.class, DownloadItem.class, DB_NAME);
             dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.CHINA);
@@ -64,7 +66,7 @@ public class RDownloadManager {
             IllegalArgumentException {
         StringBuilder path = new StringBuilder();
         DownloadItem item = new DownloadItem();
-        path.append(Environment.getExternalStorageDirectory().getAbsolutePath());
+        path.append(appCtx.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath());
         String dir = rDownload.directory();
         if (!TextUtils.isEmpty(dir)) {
             if (dir.startsWith(File.separator)) {
@@ -77,10 +79,10 @@ public class RDownloadManager {
                 path.append(File.separator);
             }
         } else {
-            path.append(File.separator)
-                    .append(packageName)
-                    .append(File.separator)
-                    .append(DEF_PATH)
+            if (!path.toString().endsWith(File.separator)) {
+                path.append(File.separator);
+            }
+            path.append(DEF_PATH)
                     .append(File.separator);
         }
         if (!TextUtils.isEmpty(rDownload.fileName())) {

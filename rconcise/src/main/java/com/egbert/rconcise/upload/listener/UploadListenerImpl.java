@@ -41,12 +41,12 @@ public class UploadListenerImpl implements IUploadListener {
     }
 
     @Override
-    public void onSuccess(final int uploadId) {
+    public void onSuccess(final int uploadId, final String resp) {
         if (observer != null) {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    observer.onSuccess(uploadId);
+                    observer.onSuccess(uploadId, resp);
                 }
             });
         }

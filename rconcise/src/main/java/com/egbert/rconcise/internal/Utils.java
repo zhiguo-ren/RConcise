@@ -46,8 +46,8 @@ public class Utils {
       * @param obj 实体对象
       * @return
       */
-    public static Map<String, String> beanToMap(Object obj) {
-        Map<String, String> map = new HashMap<>();
+    public static Map<String, Object> beanToMap(Object obj) {
+        Map<String, Object> map = new HashMap<>();
         if (obj == null) {
             return map;
         }
@@ -58,7 +58,7 @@ public class Utils {
                 field.setAccessible(true);
                 Object value = field.get(obj);
                 if (value != null && !"".equals(value)) {
-                    map.put(field.getName(), String.valueOf(value));
+                    map.put(field.getName(), value);
                 }
             }
         } catch (Exception e) {
@@ -84,9 +84,9 @@ public class Utils {
      * 解析请求参数
      */
     public static StringBuilder parseParams(Object reqParams, boolean isInBody) throws UnsupportedEncodingException {
-        Map<String, String> map;
+        Map<String, Object> map;
         if (reqParams instanceof Map) {
-            map = (Map<String, String>) reqParams;
+            map = (Map<String, Object>) reqParams;
         } else {
             map = Utils.beanToMap(reqParams);
         }

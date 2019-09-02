@@ -11,6 +11,7 @@ import com.egbert.rconcise.internal.ContentType;
 import com.egbert.rconcise.internal.ErrorCode;
 import com.egbert.rconcise.internal.HeaderField;
 import com.egbert.rconcise.internal.ReqMethod;
+import com.egbert.rconcise.internal.Utils;
 import com.egbert.rconcise.internal.http.IRequest;
 import com.egbert.rconcise.upload.MultiPartBody;
 import com.egbert.rconcise.upload.RUpload;
@@ -246,7 +247,7 @@ public class UploadServiceImpl implements IReqService, IDownloadOrUploadReqServi
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.CHINA);
                 uploadItem.endTime = dateFormat.format(new Date());
                 uploadDao.updateRecord(uploadItem);
-                respListener.onSuccess(uploadItem.id);
+                respListener.onSuccess(uploadItem.id, Utils.handleInputStream(connection.getInputStream()));
             } else {
                 respListener.onFailure(uploadItem.id, ErrorCode.RESP_ERROR, code, connection.getResponseMessage());
                 failedStatus();

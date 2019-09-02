@@ -174,8 +174,8 @@ public final class RDownload implements IRequest {
         }
 
         /**
-         * 添加文件下载的目标文件目录（下载到哪）,根目录之下的目录路径（不包含sd卡根目录，由框架统一获取系统外置存储根目录），
-         * 如：rdownload/imgs/   如果要存到sd卡根目录，只使用 "/" 即可
+         * 添加文件下载的目标文件目录（下载到哪）,应用根目录之下的目录路径，
+         * 如：Android/data/本应用包名/files/rdownload/imgs/
          *  不设置为默认目录
          */
         public Builder directory(String directory) {

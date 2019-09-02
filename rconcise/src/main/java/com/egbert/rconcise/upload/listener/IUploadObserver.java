@@ -27,7 +27,7 @@ public interface IUploadObserver {
     /**
      * 完成 callback
      */
-    void onSuccess(int uploadId);
+    void onSuccess(int uploadId, String resp);
 
     /**
      * 暂停上传 callback

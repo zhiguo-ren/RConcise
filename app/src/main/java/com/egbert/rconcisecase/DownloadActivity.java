@@ -2,11 +2,12 @@ package com.egbert.rconcisecase;
 
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
@@ -20,6 +21,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import cn.bingoogolapple.progressbar.BGAProgressBar;
+
 
 /**
  * Created by Egbert on 4/136/2019.
@@ -38,6 +40,7 @@ public class DownloadActivity extends AppCompatActivity {
         downloadRv = findViewById(R.id.download_rv);
         DownloadAdapter adapter = new DownloadAdapter();
         downloadRv.setAdapter(adapter);
+        downloadRv.setAdapter(adapter);
         downloadRv.setLayoutManager(new LinearLayoutManager(this));
         adapter.setNewData(createData());
     }
@@ -53,11 +56,12 @@ public class DownloadActivity extends AppCompatActivity {
 
         Download download3 = new Download();
         download3.url = url3;
-        download3.filePath = "/rdownload/files"; // 下载到根目录下的rdownload/files
+        // 下载到应用目录Android/data/com.egbert.XXX/files/Download下的rdownload/files下
+        download3.filePath = "/rdownload/files";
 
         Download download4 = new Download();
         download4.url = url4;
-        download4.filePath = "/"; // 下载到sd卡根目录 只需要用/
+        download4.filePath = "/"; // 下载到应用files目录 只需要用/
 
         task.add(download1);
         task.add(download2);

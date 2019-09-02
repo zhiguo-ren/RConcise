@@ -1,7 +1,8 @@
 package com.egbert.rconcise.internal.http;
 
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import com.egbert.rconcise.RClient;
 import com.egbert.rconcise.internal.ReqMethod;
@@ -106,7 +107,7 @@ public final class Request implements IRequest {
         private String url;
         private HashMap<String, String> headerMap;
         private String method;
-        private Map<String, String> params;
+        private Map<String, Object> params;
         private HashMap<String, String> pathMap;
         private ArrayList<String> pathList;
         private boolean isInBody;
@@ -156,7 +157,7 @@ public final class Request implements IRequest {
          * @param name 参数名
          * @param value 参数值
          */
-        public Builder addParam(String name, String value) {
+        public Builder addParam(String name, Object value) {
             if (params == null) {
                 params = new HashMap<>();
             }
