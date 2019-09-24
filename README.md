@@ -161,4 +161,9 @@ DownloadUploadThreadPoolManager.getInst().launchUpload();
 1、本次更新修改了request支持的参数类型，支持除了string以外的其他类型，如int，float等;
 ```
 
+```
+##### 版本1.0.9
+1、本次更新修改了响应体无内容报错bug;
+```
+
 

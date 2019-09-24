@@ -67,7 +67,12 @@ public class CallNetServiceInterceptor implements Interceptor {
                 writer.close();
             }
             int code = connection.getResponseCode();
-            String resp = Utils.handleInputStream(connection.getInputStream());
+            String resp = null;
+            try {
+                resp = Utils.handleInputStream(connection.getInputStream());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             builder.code(code)
                     .respEndTime(System.currentTimeMillis())
                     .message(connection.getResponseMessage())
