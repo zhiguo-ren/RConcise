@@ -33,6 +33,7 @@ public final class Request implements IRequest {
     private final HashMap<String, String> pathMap;
     private final ArrayList<String> pathList;
     private final boolean isInBody;
+    private final boolean isCancel;
 
     /**
      * method  请求方法必须全部大写<p>
@@ -53,6 +54,7 @@ public final class Request implements IRequest {
         this.pathMap = builder.pathMap;
         this.pathList = builder.pathList;
         this.isInBody = builder.isInBody;
+        this.isCancel = builder.isCancel;
     }
 
     public Builder newBuilder() {
@@ -111,6 +113,7 @@ public final class Request implements IRequest {
         private HashMap<String, String> pathMap;
         private ArrayList<String> pathList;
         private boolean isInBody;
+        private boolean isCancel;
 
         private Builder(String url) {
             this.url = url;

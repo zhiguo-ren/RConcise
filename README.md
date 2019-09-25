@@ -166,4 +166,9 @@ DownloadUploadThreadPoolManager.getInst().launchUpload();
 1、本次更新修改了响应体无内容报错bug;
 ```
 
+```
+##### 版本1.10
+1、修复gradle无法下载包的问题;
+```
+
 
