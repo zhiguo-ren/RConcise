@@ -1,8 +1,8 @@
 package com.egbert.rconcise.task;
 
+import com.egbert.rconcise.internal.Utils;
+
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -15,14 +15,14 @@ import java.util.concurrent.TimeUnit;
 public final class ThreadPoolManager {
     private static volatile ThreadPoolManager sManager;
 
-    private LinkedBlockingDeque<Future<?>> deque;
+    private LinkedBlockingDeque<CustomFuturetask> deque;
     private ThreadPoolExecutor executor;
 
     private RejectedExecutionHandler handler = new RejectedExecutionHandler() {
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             try {
-                deque.put(new FutureTask<>(r, null));
+                deque.put(new CustomFuturetask((ReqTask) r, null));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -33,14 +33,16 @@ public final class ThreadPoolManager {
         @Override
         public void run() {
             while (true) {
-                FutureTask futureTask = null;
+                CustomFuturetask futureTask = null;
                 try {
-                    futureTask = (FutureTask) deque.take();
+                    futureTask =  deque.take();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 if (futureTask != null) {
-                    executor.execute(futureTask);
+                    if (!Utils.isFinishActivity(futureTask.getActivity())) {
+                        executor.execute(futureTask);
+                    }
                 }
             }
         }
@@ -48,7 +50,7 @@ public final class ThreadPoolManager {
 
     private ThreadPoolManager() {
         deque = new LinkedBlockingDeque<>();
-        int num = Runtime.getRuntime().availableProcessors() * 2;
+        int num = Runtime.getRuntime().availableProcessors() * 10;
         executor = new ThreadPoolExecutor(8, 8, 20,
                 TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(num),
                 new CustomThreadFactory("normal"), handler);
@@ -67,8 +69,8 @@ public final class ThreadPoolManager {
         return sManager;
     }
 
-    public void execute(Runnable runnable) throws InterruptedException {
-        deque.put(new FutureTask<>(runnable, null));
+    public void execute(ReqTask runnable) throws InterruptedException {
+        deque.put(new CustomFuturetask(runnable, null));
     }
 
 }

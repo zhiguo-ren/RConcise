@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         rClient.addInterceptor(interceptor);
         reqPermission();
+        reqIndex();
     }
 
     private void req(boolean method, String ...args) {
@@ -127,6 +128,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             default: break;
         }
+    }
+
+    public void reqIndex() {
+        Request.Builder.create("https://api2.xintujing.cn/v1/course/homeJson")
+                .client(RConcise.inst().rClient(RCLIENT_KEY))
+                .setActivity(this)
+                .respStrListener(new IRespListener<String>() {
+                    @Override
+                    public void onSuccess(String s) {
+                        buttonGet.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                buttonGet.setVisibility(View.INVISIBLE);
+                            }
+                        }, 50);
+                    }
+
+                    @Override
+                    public void onError(Exception e, String desp) {
+//                        super.onError(e, desp);
+                    }
+
+                    @Override
+                    public void onFailure(int respCode, String desp) {
+//                        super.onFailure(respCode, desp);
+                    }
+                })
+                .get();
     }
 
 }

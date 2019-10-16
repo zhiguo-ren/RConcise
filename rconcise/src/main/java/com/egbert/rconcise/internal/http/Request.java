@@ -1,5 +1,6 @@
 package com.egbert.rconcise.internal.http;
 
+import android.app.Activity;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -32,8 +33,8 @@ public final class Request implements IRequest {
     private final String method;
     private final HashMap<String, String> pathMap;
     private final ArrayList<String> pathList;
+    private final Activity activity;
     private final boolean isInBody;
-    private final boolean isCancel;
 
     /**
      * method  请求方法必须全部大写<p>
@@ -54,7 +55,7 @@ public final class Request implements IRequest {
         this.pathMap = builder.pathMap;
         this.pathList = builder.pathList;
         this.isInBody = builder.isInBody;
-        this.isCancel = builder.isCancel;
+        this.activity = builder.activity;
     }
 
     public Builder newBuilder() {
@@ -101,6 +102,10 @@ public final class Request implements IRequest {
         return method;
     }
 
+    public Activity activity() {
+        return activity;
+    }
+
     public static class Builder {
         private RClient rClient;
         private IHttpRespListener respListener;
@@ -113,7 +118,7 @@ public final class Request implements IRequest {
         private HashMap<String, String> pathMap;
         private ArrayList<String> pathList;
         private boolean isInBody;
-        private boolean isCancel;
+        private Activity activity;
 
         private Builder(String url) {
             this.url = url;
@@ -134,6 +139,7 @@ public final class Request implements IRequest {
             this.pathMap = req.pathMap;
             this.pathList = req.pathList;
             this.isInBody = req.isInBody;
+            this.activity = req.activity;
         }
 
         public Builder client(@NonNull RClient rClient) {
@@ -201,6 +207,11 @@ public final class Request implements IRequest {
          */
         public Builder setIsInBody(boolean isInBody) {
             this.isInBody = isInBody;
+            return this;
+        }
+
+        public Builder setActivity(Activity activity) {
+            this.activity = activity;
             return this;
         }
 

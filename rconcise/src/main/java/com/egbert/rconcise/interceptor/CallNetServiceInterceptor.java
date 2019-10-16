@@ -27,6 +27,9 @@ public class CallNetServiceInterceptor implements Interceptor {
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
+        if (Utils.isFinishActivity(request.activity())) {
+            return null;
+        }
         Map<String, String> headerMap = request.headers();
         Object reqParams = request.reqParams();
 

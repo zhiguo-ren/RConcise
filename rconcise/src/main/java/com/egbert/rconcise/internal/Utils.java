@@ -1,6 +1,8 @@
 package com.egbert.rconcise.internal;
 
+import android.app.Activity;
 import android.net.Uri;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.Patterns;
 
@@ -152,5 +154,10 @@ public class Utils {
             throw new IllegalStateException("The filename cannot be obtained from the url, please set filename.");
         }
         return filename;
+    }
+
+    public static boolean isFinishActivity(Activity activity) {
+        return activity != null && (activity.isFinishing()
+                || (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR1 && activity.isDestroyed()));
     }
 }

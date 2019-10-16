@@ -42,26 +42,35 @@ public class ReqServiceImpl implements IReqService {
     public void execute() {
         try {
             response = getResponseByInterceptors();
+            if (response == null) {
+                return;
+            }
             int respCode = response.respCode();
             String respStr = response.respStr();
             //响应头
             Map<String, List<String>> headerMap = response.headers();
-            if (headerListener != null) {
+            if (headerListener != null && !Utils.isFinishActivity(response.request().activity())) {
                 headerListener.onHeaders(headerMap);
             }
             if (httpRespListener != null) {
                 if (respCode == HttpURLConnection.HTTP_OK
                         || respCode == HttpURLConnection.HTTP_CREATED
                         || respCode == HttpURLConnection.HTTP_NO_CONTENT) {
-                    httpRespListener.onSuccess(respStr, headerMap);
+                    if (!Utils.isFinishActivity(response.request().activity())) {
+                        httpRespListener.onSuccess(respStr, headerMap);
+                    }
                 } else if (respCode >= HttpURLConnection.HTTP_INTERNAL_ERROR) {
-                    httpRespListener.onFailure(respCode, TextUtils.isEmpty(respStr) ? response.message() : respStr);
+                    if (!Utils.isFinishActivity(response.request().activity())) {
+                        httpRespListener.onFailure(respCode, TextUtils.isEmpty(respStr) ? response.message() : respStr);
+                    }
                 } else {
-                    httpRespListener.onFailure(respCode, response.message());
+                    if (!Utils.isFinishActivity(response.request().activity())) {
+                        httpRespListener.onFailure(respCode, response.message());
+                    }
                 }
             }
         } catch (Exception e) {
-            if (httpRespListener != null) {
+            if (httpRespListener != null && !Utils.isFinishActivity(response.request().activity())) {
                 httpRespListener.onError(e);
             }
             Log.e(Utils.TAG, Log.getStackTraceString(e));

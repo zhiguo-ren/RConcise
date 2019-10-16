@@ -1,9 +1,11 @@
 package com.egbert.rconcise.task;
 
+import android.app.Activity;
 import android.util.Log;
 
 import com.egbert.rconcise.download.DownloadItem;
 import com.egbert.rconcise.download.RDownload;
+import com.egbert.rconcise.internal.Utils;
 import com.egbert.rconcise.internal.http.IRequest;
 import com.egbert.rconcise.internal.http.Request;
 import com.egbert.rconcise.service.DownloadServiceImpl;
@@ -13,6 +15,8 @@ import com.egbert.rconcise.service.ReqServiceImpl;
 import com.egbert.rconcise.service.UploadServiceImpl;
 import com.egbert.rconcise.upload.UploadItem;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Created by Egbert on 2/25/2019.
  */
@@ -21,6 +25,7 @@ public class ReqTask implements Runnable {
     public static final int DOWNLOAD_REQ = 2;
     public static final int UPLOAD_REQ = 3;
     private int taskId;
+    private WeakReference<Activity> activity;
     private IReqService reqService;
     private CustomFuturetask futureTask;
     /**
@@ -34,6 +39,7 @@ public class ReqTask implements Runnable {
         if (request instanceof Request) {
             this.reqService = new ReqServiceImpl();
             taskType = GENERAL_REQ;
+            this.activity = new WeakReference<>(((Request) request).activity());
         } else if (request instanceof RDownload){
             this.reqService = new DownloadServiceImpl();
             taskType = DOWNLOAD_REQ;
@@ -42,6 +48,13 @@ public class ReqTask implements Runnable {
             taskType = UPLOAD_REQ;
         }
         this.reqService.setRequest(request);
+    }
+
+    public Activity getActivity() {
+        if (activity != null) {
+            return activity.get();
+        }
+        return null;
     }
 
     public void setDownloadItem(DownloadItem item) {
@@ -64,6 +77,9 @@ public class ReqTask implements Runnable {
 
     @Override
     public void run() {
+        if (activity != null && Utils.isFinishActivity(activity.get())) {
+            return;
+        }
         reqService.execute();
     }
 
