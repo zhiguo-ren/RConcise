@@ -186,4 +186,14 @@ DownloadUploadThreadPoolManager.getInst().launchUpload();
 1、修复1.12产生的bug;
 ```
 
+```
+##### 版本1.14
+1、添加请求连接和读取超时;
+```
+
+```
+##### 版本1.15
+1、修复日志拦截器响应头为null时的空指针异常;
+```
+
 

@@ -12,7 +12,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.egbert.rconcise.RClient;
 import com.egbert.rconcise.RConcise;
 import com.egbert.rconcise.download.RDownloadManager;
 import com.egbert.rconcise.interceptor.HttpLoggingInterceptor;
@@ -42,8 +41,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         buttonPost.setOnClickListener(this);
         download.setOnClickListener(this);
         upload.setOnClickListener(this);
-        RClient rClient = RConcise.inst().createRClient(RCLIENT_KEY);
-        rClient.setBaseUrl(BASE_URL);
+        RConcise.inst().rClient(RCLIENT_KEY).setBaseUrl(BASE_URL);
         /*try {
             rClient.setSelfCert(true, getAssets().open("cacert.pem"));
         } catch (IOException e) {
@@ -51,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }*/
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
         interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-        rClient.addInterceptor(interceptor);
+        RConcise.inst().rClient(RCLIENT_KEY).addInterceptor(interceptor);
         reqPermission();
         reqIndex();
     }
@@ -140,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         buttonGet.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                buttonGet.setVisibility(View.INVISIBLE);
+//                                buttonGet.setVisibility(View.INVISIBLE);
                             }
                         }, 50);
                     }

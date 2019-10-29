@@ -117,19 +117,21 @@ public class Utils {
     public static byte[] paramsToByte(String contentType, Object reqParams) throws UnsupportedEncodingException {
         String tmpType = ContentType.FORM_URLENCODED.getValue();
         byte[] params = null;
-        if (TextUtils.isEmpty(contentType)) {
-            contentType = tmpType;
-        }
-        if (tmpType.contains(contentType)) {
-            StringBuilder builder = Utils.parseParams(reqParams, true);
-            if (builder != null && builder.length() > 0) {
-                params = builder.toString().getBytes(Const.UTF8);
+        if (reqParams != null) {
+            if (TextUtils.isEmpty(contentType)) {
+                contentType = tmpType;
             }
-        } else if (ContentType.JSON.getValue().contains(contentType)) {
-            String json = new Gson().toJson(reqParams);
-            params = json.getBytes(Const.UTF8);
-        } else {
-            params = reqParams.toString().getBytes(Const.UTF8);
+            if (tmpType.contains(contentType)) {
+                StringBuilder builder = Utils.parseParams(reqParams, true);
+                if (builder != null && builder.length() > 0) {
+                    params = builder.toString().getBytes(Const.UTF8);
+                }
+            } else if (ContentType.JSON.getValue().contains(contentType)) {
+                String json = new Gson().toJson(reqParams);
+                params = json.getBytes(Const.UTF8);
+            } else {
+                params = reqParams.toString().getBytes(Const.UTF8);
+            }
         }
         return params;
     }

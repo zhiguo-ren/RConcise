@@ -25,7 +25,7 @@ public class CallNetServiceInterceptor implements Interceptor {
     private Response.Builder builder = Response.Builder.create();
 
     @Override
-    public Response intercept(Chain chain) throws IOException {
+    public Response intercept(Chain chain) {
         Request request = chain.request();
         if (Utils.isFinishActivity(request.activity())) {
             return null;
@@ -33,17 +33,17 @@ public class CallNetServiceInterceptor implements Interceptor {
         Map<String, String> headerMap = request.headers();
         Object reqParams = request.reqParams();
 
-        byte[] params = null;
-        if (request.isInBody() && reqParams != null) {
-            String contentType = null;
-            if (headerMap != null) {
-                contentType = headerMap.get(HeaderField.CONTENT_TYPE.getValue());
-            }
-            params = Utils.paramsToByte(contentType, reqParams);
-        }
-
         HttpURLConnection connection = null;
         try {
+            byte[] params = null;
+            if (request.isInBody() && reqParams != null) {
+                String contentType = null;
+                if (headerMap != null) {
+                    contentType = headerMap.get(HeaderField.CONTENT_TYPE.getValue());
+                }
+                params = Utils.paramsToByte(contentType, reqParams);
+            }
+
             URL reqUrl = new URL(request.url());
             connection = (HttpURLConnection) reqUrl.openConnection();
             RClient rClient = request.rClient();
@@ -63,6 +63,8 @@ public class CallNetServiceInterceptor implements Interceptor {
                 }
             }
             builder.reqStartTime(System.currentTimeMillis());
+            connection.setConnectTimeout(15 * 1000);
+            connection.setReadTimeout(20 * 1000);
             connection.connect();
             if (request.isInBody() && params != null) {
                 BufferedOutputStream writer = new BufferedOutputStream(connection.getOutputStream());
@@ -83,6 +85,8 @@ public class CallNetServiceInterceptor implements Interceptor {
                     .respStr(resp)
                     .request(request);
             return builder.build();
+        } catch (IOException e) {
+            return builder.request(request).exception(e).build();
         } finally {
             if (connection != null) {
                 connection.disconnect();

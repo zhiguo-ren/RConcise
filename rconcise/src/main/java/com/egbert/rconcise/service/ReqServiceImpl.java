@@ -45,6 +45,13 @@ public class ReqServiceImpl implements IReqService {
             if (response == null) {
                 return;
             }
+            IOException e = response.exception();
+            if (e != null) {
+                if (httpRespListener != null && !Utils.isFinishActivity(response.request().activity())) {
+                    httpRespListener.onError(e);
+                }
+                return;
+            }
             int respCode = response.respCode();
             String respStr = response.respStr();
             //响应头
@@ -70,7 +77,8 @@ public class ReqServiceImpl implements IReqService {
                 }
             }
         } catch (Exception e) {
-            if (httpRespListener != null && !Utils.isFinishActivity(response.request().activity())) {
+            if (httpRespListener != null && response != null
+                    && !Utils.isFinishActivity(response.request().activity())) {
                 httpRespListener.onError(e);
             }
             Log.e(Utils.TAG, Log.getStackTraceString(e));

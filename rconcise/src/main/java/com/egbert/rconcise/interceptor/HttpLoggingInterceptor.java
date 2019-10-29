@@ -186,15 +186,17 @@ public class HttpLoggingInterceptor implements Interceptor {
 
         if (logHeaders) {
             Map<String, List<String>> headers = response.headers();
-            for (String key : headers.keySet()) {
-                List<String> info = headers.get(key);
-                if (info != null && info.size() > 0) {
-                    StringBuilder builder = new StringBuilder();
-                    for (String value : info) {
-                        builder.append(value);
-                    }
-                    if (key != null) {
-                        logger.log(key + ": " + builder.toString());
+            if (headers != null && headers.size() > 0) {
+                for (String key : headers.keySet()) {
+                    List<String> info = headers.get(key);
+                    if (info != null && info.size() > 0) {
+                        StringBuilder builder = new StringBuilder();
+                        for (String value : info) {
+                            builder.append(value);
+                        }
+                        if (key != null) {
+                            logger.log(key + ": " + builder.toString());
+                        }
                     }
                 }
             }

@@ -1,5 +1,6 @@
 package com.egbert.rconcise.internal.http;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,7 @@ public final class Response {
     private final long reqStartTime;
     private final long respEndTime;
     private final String respStr;
+    private IOException exception;
 
     private Response(Builder builder) {
         this.request = builder.request;
@@ -24,6 +26,7 @@ public final class Response {
         this.reqStartTime = builder.reqStartTime;
         this.respEndTime = builder.respEndTime;
         this.respStr = builder.respStr;
+        this.exception = builder.exception;
     }
 
     public Request request() {
@@ -40,6 +43,10 @@ public final class Response {
 
     public String message() {
         return message;
+    }
+
+    public IOException exception() {
+        return exception;
     }
 
     public long startTime() {
@@ -66,6 +73,7 @@ public final class Response {
         private long reqStartTime;
         private long respEndTime;
         private String respStr;
+        private IOException exception;
 
         public static Builder create() {
            return new Builder();
@@ -80,6 +88,7 @@ public final class Response {
             this.message = resp.message;
             this.headers = resp.headers;
             this.respStr = resp.respStr;
+            this.exception = resp.exception;
         }
 
         public Builder request(Request request) {
@@ -94,6 +103,11 @@ public final class Response {
 
         public Builder respStr(String respStr) {
             this.respStr = respStr;
+            return this;
+        }
+
+        public Builder exception(IOException e) {
+            this.exception = e;
             return this;
         }
 
