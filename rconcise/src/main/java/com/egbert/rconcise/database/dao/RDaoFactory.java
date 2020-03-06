@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * dao工程类，通过来给创建dao，该类为单例
+ * dao工程类，通过该类创建dao，该类为单例
  * Created by Egbert on 3/11/2019.
  */
 public class RDaoFactory {

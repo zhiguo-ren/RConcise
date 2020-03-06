@@ -35,7 +35,7 @@ public final class DownloadUploadThreadPoolManager {
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             try {
-                downloadDeque.put(new CustomFuturetask((ReqTask) r, null));
+                downloadDeque.put((CustomFuturetask) r);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -46,7 +46,7 @@ public final class DownloadUploadThreadPoolManager {
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             try {
-                uploadDeque.put(new CustomFuturetask((ReqTask) r, null));
+                uploadDeque.put((CustomFuturetask) r);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

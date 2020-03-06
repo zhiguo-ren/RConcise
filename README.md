@@ -196,4 +196,9 @@ DownloadUploadThreadPoolManager.getInst().launchUpload();
 1、修复日志拦截器响应头为null时的空指针异常;
 ```
 
+```
+##### 版本1.16
+1、修复线程池任务队列强转异常bug;
+```
+
 

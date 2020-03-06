@@ -22,7 +22,7 @@ public final class ThreadPoolManager {
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             try {
-                deque.put(new CustomFuturetask((ReqTask) r, null));
+                deque.put((CustomFuturetask) r);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -35,7 +35,7 @@ public final class ThreadPoolManager {
             while (true) {
                 CustomFuturetask futureTask = null;
                 try {
-                    futureTask =  deque.take();
+                    futureTask = deque.take();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

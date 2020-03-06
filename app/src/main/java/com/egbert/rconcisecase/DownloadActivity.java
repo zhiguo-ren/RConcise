@@ -4,11 +4,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 import com.egbert.rconcise.download.RDownload;
@@ -20,6 +15,10 @@ import com.egbert.rconcisecase.model.Download;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import cn.bingoogolapple.progressbar.BGAProgressBar;
 
 
