@@ -223,7 +223,7 @@ public final class DownloadUploadThreadPoolManager {
             }
         }
         for (Runnable runnable : downloadExecutor.getQueue()) {
-            if (((ReqTask) runnable).getTaskId() == task.getTaskId()) {
+            if (((CustomFuturetask) runnable).getTaskId() == task.getTaskId()) {
                 return downloadExecutor.remove(runnable);
             }
         }
@@ -234,7 +234,7 @@ public final class DownloadUploadThreadPoolManager {
                 }
             }
             for (Runnable runnable : uploadExecutor.getQueue()) {
-                if (((ReqTask) runnable).getTaskId() == task.getTaskId()) {
+                if (((CustomFuturetask) runnable).getTaskId() == task.getTaskId()) {
                     return uploadExecutor.remove(runnable);
                 }
             }
@@ -249,7 +249,7 @@ public final class DownloadUploadThreadPoolManager {
             }
         }
         for (Runnable runnable : downloadExecutor.getQueue()) {
-            if (((ReqTask) runnable).getTaskId() == task.getTaskId()) {
+            if (((CustomFuturetask) runnable).getTaskId() == task.getTaskId()) {
                 return true;
             }
         }
@@ -260,7 +260,7 @@ public final class DownloadUploadThreadPoolManager {
                 }
             }
             for (Runnable runnable : uploadExecutor.getQueue()) {
-                if (((ReqTask) runnable).getTaskId() == task.getTaskId()) {
+                if (((CustomFuturetask) runnable).getTaskId() == task.getTaskId()) {
                     return true;
                 }
             }

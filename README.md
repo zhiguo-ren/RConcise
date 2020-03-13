@@ -201,4 +201,9 @@ DownloadUploadThreadPoolManager.getInst().launchUpload();
 1、修复线程池任务队列强转异常bug;
 ```
 
+```
+##### 版本1.17
+1、修复线程池任务队列删除时强转异常bug;
+```
+
 
