@@ -7,6 +7,15 @@ import java.util.HashMap;
  */
 public class RConcise {
 
+    /**
+     * 网络连接超时 毫秒
+     */
+    public static int CONNECT_TIMEOUT = 15 * 1000;
+    /**
+     * 读取超时 毫秒
+     */
+    public static int READ_TIMEOUT = 20 * 1000;
+
     private HashMap<String, RClient> rClientHashMap;
 
     private static volatile RConcise sRConcise;
@@ -31,7 +40,8 @@ public class RConcise {
 
     /**
      * 创建请求客户端
-     * @param name  名称标识 是rClient在应用内全局唯一标识
+     *
+     * @param name 名称标识 是rClient在应用内全局唯一标识
      */
     public RClient createRClient(String name) {
         if (rClientHashMap.containsKey(name)) {
@@ -44,6 +54,7 @@ public class RConcise {
 
     /**
      * 通过名称标识获取请求Client
+     *
      * @param name rClient 的名称，是rClient在应用内全局唯一标识
      */
     public RClient rClient(String name) {

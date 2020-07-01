@@ -206,4 +206,9 @@ DownloadUploadThreadPoolManager.getInst().launchUpload();
 1、修复线程池任务队列删除时强转异常bug;
 ```
 
+```
+##### 版本1.18
+1、增加连接和读取超时的时间设置，通过设置RConcise的CONNECT_TIMEOUT和READ_TIMEOUT静态变量完成，单位毫秒;
+```
+
 

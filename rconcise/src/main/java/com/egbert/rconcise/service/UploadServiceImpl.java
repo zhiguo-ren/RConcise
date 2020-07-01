@@ -112,7 +112,7 @@ public class UploadServiceImpl implements IReqService, IDownloadOrUploadReqServi
                 ((HttpsURLConnection)connection).setSSLSocketFactory(rClient.getSSlSocketFactory());
             }
             connection.setRequestMethod(ReqMethod.POST.getMethod());
-            connection.setConnectTimeout(20000);
+            connection.setConnectTimeout(RConcise.CONNECT_TIMEOUT);
             connection.setDoOutput(true);
 
             byte[] startBoundary = (BOUNDARY_PREFIX + BOUNDARY + CRLF).getBytes(UTF8);

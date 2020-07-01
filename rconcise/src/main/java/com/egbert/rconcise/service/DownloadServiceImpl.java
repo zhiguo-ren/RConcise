@@ -3,6 +3,7 @@ package com.egbert.rconcise.service;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.egbert.rconcise.RConcise;
 import com.egbert.rconcise.download.DownloadDao;
 import com.egbert.rconcise.download.DownloadItem;
 import com.egbert.rconcise.internal.ErrorCode;
@@ -65,7 +66,7 @@ public class DownloadServiceImpl implements IReqService, IDownloadOrUploadReqSer
             String method = rDownload.method().toUpperCase();
             boolean isPost = ReqMethod.POST.getMethod().equals(method);
             connection.setRequestMethod(method);
-            connection.setConnectTimeout(20000);
+            connection.setConnectTimeout(RConcise.CONNECT_TIMEOUT);
             if (isPost) {
                 connection.setDoOutput(true);
             }

@@ -1,6 +1,7 @@
 package com.egbert.rconcise.interceptor;
 
 import com.egbert.rconcise.RClient;
+import com.egbert.rconcise.RConcise;
 import com.egbert.rconcise.internal.Const;
 import com.egbert.rconcise.internal.ContentType;
 import com.egbert.rconcise.internal.HeaderField;
@@ -63,8 +64,8 @@ public class CallNetServiceInterceptor implements Interceptor {
                 }
             }
             builder.reqStartTime(System.currentTimeMillis());
-            connection.setConnectTimeout(15 * 1000);
-            connection.setReadTimeout(20 * 1000);
+            connection.setConnectTimeout(RConcise.CONNECT_TIMEOUT);
+            connection.setReadTimeout(RConcise.READ_TIMEOUT);
             connection.connect();
             if (request.isInBody() && params != null) {
                 BufferedOutputStream writer = new BufferedOutputStream(connection.getOutputStream());
