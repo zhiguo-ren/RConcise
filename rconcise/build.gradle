@@ -7,7 +7,7 @@ apply plugin: 'com.github.dcendents.android-maven'
 //Properties properties = new Properties()
 //properties.load(project.rootProject.file('local.properties').newDataInputStream())
 version = "1.18" //发布版本号
-group = "com.egbert.rconcise" //最终引用形式，如compile 'com.piano.demolib:1.0.0'，其中demolib在后面配置
+group = "com.egbert" //最终引用形式，如compile 'com.piano.demolib:1.0.0'，其中demolib在后面配置
 
 
 android {
