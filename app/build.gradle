@@ -31,4 +31,7 @@ dependencies {
     implementation 'com.orhanobut:logger:2.2.0'
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.30'
     implementation 'cn.bingoogolapple:bga-progressbar:1.0.1@aar'
+
+//    implementation 'com.github.zhiguo-ren:RConcise:1.18'
+
 }
